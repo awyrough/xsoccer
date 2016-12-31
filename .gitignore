@@ -1,5 +1,6 @@
 # Emacs tmp files
 *~
+# PY tmp files
 *.pyc
 
 # Byte-compiled / optimized / DLL files
