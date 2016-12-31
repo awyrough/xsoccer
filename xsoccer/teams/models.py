@@ -11,4 +11,4 @@ class Team(models.Model):
     # Team Name
     name = models.CharField(max_length=255)
     # Opta UUID (NB: Different than Django-generated pk/id) 
-    uuid = models.IntegerField()
+    uuid = models.CharField(max_length=255, unique=True)
