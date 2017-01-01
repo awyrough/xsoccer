@@ -11,12 +11,12 @@ def get_children(xml_obj):
     """Return the XML elements one level down"""
     return [x for x in xml_obj]
 
-def pull_attrib(xml_obj, attrib):
-    """Pull the XML attr value"""
+def get_attrib(xml_obj, attrib):
+    """Get an arbitrary XML attribute"""
     return xml_obj.attrib[attrib]
 
 def get_tag(xml_obj, tag_name):
-    """Returns the matching tag attr:value"""
+    """Returns the matching tag attribute from among the children"""
     children = get_children(xml_obj)
     for child in children:
         if child.tag == tag_name:

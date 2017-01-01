@@ -10,6 +10,12 @@ def is_team(xml_obj):
     return xml_obj.tag == "Team"
 
 class Command(BaseCommand):
+    """
+    Sample usage:
+    python manage.py build_team_table \
+        --dry_run \
+        --data_filename=data/f9/srml-98-2016-f842641-matchresults.xml
+    """
     help = "Populate team table"
 
     def add_arguments(self, parser):
@@ -47,11 +53,15 @@ class Command(BaseCommand):
                 if is_team(item) == False:
                     continue
                 name = xml_utils.get_tag(item, "Name").text
-                uuid = xml_utils.pull_attrib(item, "uID")
+                uuid = xml_utils.get_attrib(item, "uID")
                 team = Team(name=name, uuid=uuid)
                 new_teams.append(team)
 
+        # get all existing uuids
+        existing_team_uuids = Team.objects.all().values_list("uuid")
+
+        # log out for audit and save if not dry run and it is a new team
         for team in new_teams:
             print team.__dict__
-            if is_dry_run == False:
+            if is_dry_run == False and team.uuid not in existing_team_uuids:
                 team.save()
