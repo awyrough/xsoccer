@@ -4,6 +4,7 @@
 *.pyc
 
 *.sqlite3
+vend/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
