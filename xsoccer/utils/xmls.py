@@ -43,4 +43,6 @@ def pull_text_if_exists(xml_obj, tag_name, type_name=""):
     text = None
     if obj_of_interest is not None:
         text = obj_of_interest.text
+        if text == "Unknown": #rather use a Null value rather than an "unknown" string
+            text = None
     return text

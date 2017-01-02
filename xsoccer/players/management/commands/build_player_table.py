@@ -102,13 +102,12 @@ class Command(BaseCommand):
                         , country=country)
                     new_players.append(player)
 
-                    print player
-        # # get all existing uuids
-        # existing_player_uuids = Player.objects.all().values_list("uuid")
+        # get all existing uuids
+        existing_player_uuids = Player.objects.all().values_list("uuid")
 
-        # # log out for audit and save if not dry run and it is a new team
-        # for player in new_players:
-        #     print player.__dict__
-        #     if is_dry_run == False and player.uuid not in existing_player_uuids:
-        #         player.save()
+        # log out for audit and save if not dry run and it is a new team
+        for player in new_players:
+            print player.__dict__
+            if is_dry_run == False and player.uuid not in existing_player_uuids:
+                player.save()
 
