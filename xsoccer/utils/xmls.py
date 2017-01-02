@@ -35,14 +35,17 @@ def get_tag_and_type(xml_obj, tag_name, type_name):
     return None
 
 def pull_text_if_exists(xml_obj, tag_name, type_name=""):
-    """Returns the text value of the matching tag / type attribute from among the children
+    """
+    Returns the text value of the matching tag / type attribute from 
+    among the children
 
-        This is created because get_tag_and_type().text could return a none_type if the tag didn't exist
+    This is created because get_tag_and_type().text could return a
+    none_type if the tag didn't exist
     """
     obj_of_interest = get_tag_and_type(xml_obj, tag_name, type_name)
     text = None
     if obj_of_interest is not None:
         text = obj_of_interest.text
-        if text == "Unknown": #rather use a Null value rather than an "unknown" string
+        if text == "Unknown":
             text = None
     return text

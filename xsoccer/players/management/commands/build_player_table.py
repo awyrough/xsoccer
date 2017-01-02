@@ -76,30 +76,45 @@ class Command(BaseCommand):
                         continue 
 
                     uuid = xml_utils.get_attrib(i, "uID")
-                    first_name = xml_utils.pull_text_if_exists(i, "Stat", "first_name")
+                    first_name = xml_utils.pull_text_if_exists(i,
+                                                               "Stat", 
+                                                               "first_name")
                     first_name = unicode_utils.remove_accents(first_name)
-                    last_name = xml_utils.pull_text_if_exists(i, "Stat", "last_name")
+                    last_name = xml_utils.pull_text_if_exists(i, 
+                                                              "Stat", 
+                                                              "last_name")
                     last_name = unicode_utils.remove_accents(last_name)
-                    #birth_date = xml_utils.get_tag_and_type(i, "Stat", "last_name").text
-                    birth_place = xml_utils.pull_text_if_exists(i, "Stat", "birth_place")
-                    nationality = xml_utils.pull_text_if_exists(i, "Stat", "first_nationality")
+                    birth_place = xml_utils.pull_text_if_exists(
+                        i, 
+                        "Stat",
+                        "birth_place")
+                    nationality = xml_utils.pull_text_if_exists(
+                        i,
+                        "Stat",
+                        "first_nationality")
                     weight = xml_utils.pull_text_if_exists(i, "Stat", "weight")
                     height = xml_utils.pull_text_if_exists(i, "Stat", "height")
-                    position = xml_utils.pull_text_if_exists(i, "Stat", "real_position")
-                    position_side = xml_utils.pull_text_if_exists(i, "Stat", "real_position_side")
-                    country = xml_utils.pull_text_if_exists(i, "Stat", "country")
+                    position = xml_utils.pull_text_if_exists(i, 
+                                                             "Stat", 
+                                                             "real_position")
+                    position_side = xml_utils.pull_text_if_exists(
+                        i,
+                        "Stat",
+                        "real_position_side")
+                    country = xml_utils.pull_text_if_exists(i,
+                                                            "Stat",
+                                                            "country")
 
-                    player = Player(uuid=uuid\
-                        , first_name=first_name\
-                        , last_name=last_name\
-                        #, birth_date=
-                        , birth_place=birth_place\
-                        , nationality=nationality\
-                        , weight=weight\
-                        , height=height\
-                        , position=position\
-                        , position_side=position_side\
-                        , country=country)
+                    player = Player(uuid=uuid,
+                                    first_name=first_name,
+                                    last_name=last_name,
+                                    birth_place=birth_place,
+                                    nationality=nationality,
+                                    weight=weight,
+                                    height=height,
+                                    position=position,
+                                    position_side=position_side,
+                                    country=country)
                     new_players.append(player)
 
         # get all existing uuids
