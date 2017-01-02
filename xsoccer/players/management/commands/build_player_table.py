@@ -3,6 +3,7 @@
 ### Read from F40 file and construct Players models
 import utils.xmls as xml_utils
 import utils.unicode as unicode_utils
+import datetime
 
 from players.models import Player
 
@@ -22,6 +23,9 @@ def is_player(xml_obj):
 
 class Command(BaseCommand):
     """
+    Note: will want to load 2016 season first, then 2015 
+        (to keep the latest version of player info)
+
     Sample usage:
     python manage.py build_player_table \
         --dry_run \
@@ -88,6 +92,10 @@ class Command(BaseCommand):
                         i, 
                         "Stat",
                         "birth_place")
+                    birth_date = xml_utils.pull_text_if_exists(i,
+                        "Stat",
+                        "birth_date")
+                    birth_date = datetime.datetime.strptime(birth_date,"%Y-%m-%d").date()
                     nationality = xml_utils.pull_text_if_exists(
                         i,
                         "Stat",
@@ -109,6 +117,7 @@ class Command(BaseCommand):
                                     first_name=first_name,
                                     last_name=last_name,
                                     birth_place=birth_place,
+                                    birth_date=birth_date,
                                     nationality=nationality,
                                     weight=weight,
                                     height=height,

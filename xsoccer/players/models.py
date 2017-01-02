@@ -42,7 +42,7 @@ class Player(models.Model):
     nationality = models.CharField("Nationality", max_length=255, null=True)
     country = models.CharField("Country", max_length=255, null=True)
 
-    weight = models.FloatField("Weight (lbs)", default=0.0, null=True)
+    weight = models.FloatField("Weight (kg)", default=0.0, null=True)
     height = models.FloatField("Height (cm)", default=0.0, null=True)
 
     position = models.CharField("Real Position", choices=POSITIONS, max_length=255, null=True)
