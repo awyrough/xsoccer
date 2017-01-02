@@ -9,6 +9,28 @@ class Player(models.Model):
 
     Should be biographical and meta information about the player.
     """
+    POSITIONS = (
+        ("Goalkeeper", "Goalkeeper"),
+        ("Wing Back", "Wing Back"),
+        ("Full Back", "Full Back"),
+        ("Central Defender", "Central Defender"),
+        ("Defensive Midfielder","Defensive Midfielder"),
+        ("Attacking Midfielder","Attacking Midfielder"),
+        ("Central Midfielder","Central Midfielder"),
+        ("Winger","Winger"),
+        ("Striker","Striker"),
+        ("Second Striker","Second Striker"),
+        )
+
+    POSITION_SIDES = (
+        ("Left","Left"),
+        ("Right","Right"),
+        ("Centre","Centre"),
+        ("Left/Centre","Left/Centre"),
+        ("Centre/Right","Centre/Right"),
+        ("Left/Centre/Right","Left/Centre/Right"),
+        ("Left/Right","Left/Right"),
+        )
     # Opta UUID (NB: Different than Django-generated pk/id) 
     uuid = models.CharField("Opta uID", max_length=255, unique=True)
 
@@ -23,11 +45,8 @@ class Player(models.Model):
     weight = models.FloatField("Weight (lbs)", default=0.0, null=True)
     height = models.FloatField("Height (cm)", default=0.0, null=True)
 
-    # TODO(aj): Determine if position and position_side should be abstracted
-    # to allow for a CHOICE field and not allow arbitrary values here
-    # i.e. RIGHT, LEFT, CENTER...DEFENDER, MIDFIELDER, GK
-    position = models.CharField("Real Position", max_length=255, null=True)
-    position_side = models.CharField("Position Side of Choice", max_length=255, null=True)
+    position = models.CharField("Real Position", choices=POSITIONS, max_length=255, null=True)
+    position_side = models.CharField("Position Side of Choice", choices=POSITION_SIDES, max_length=255, null=True)
 
     def __str__(self):
 		return "%s %s (uID = %s)" % (self.first_name, 

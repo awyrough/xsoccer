@@ -12,3 +12,8 @@ class Venue(models.Model):
     # TODO(hillwyrough): We should make this a CHOICES field so we have
     # a distinct set of countries to choose from.
     country = models.CharField(max_length=255)
+    # TODO(hill): I think we should include capacity and surface-type as well; 
+    # we can probably just load those in manually using a csv file? 
+
+    #capacity = models.IntegerField(default=0,null=True)
+    #surface = models.CharField(...)
