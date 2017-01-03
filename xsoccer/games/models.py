@@ -19,6 +19,9 @@ class Game(models.Model):
 
 	winner = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False)
 
+	first_half_time = models.IntegerField("1st Half Length (mins)")
+	second_half_time = models.IntegerField("2nd Half Length (mins)")
+	
 	def __str__(self):
 		return "%s at %s on %s (Winner = %s)" % (
 			self.away_team, self.home_team, self.date, self.winner)
@@ -29,6 +32,9 @@ class Game(models.Model):
 			return self.venue
 		else:
 			return None
+
+	def game_length(self):
+		return self.first_half_time + self.second_half_time
 
 	class Meta:
 		unique_together = ["home_team", "away_team", "date"]
