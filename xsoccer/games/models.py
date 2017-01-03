@@ -4,21 +4,17 @@ from django.db import models
 
 # Create your models here.
 class Game(models.Model):
-    """
-    An Opta game.
-    """
-    # Opta UUID (NB: Different than Django-generated pk/id) 
-    uuid = models.CharField("Opta uID", max_length=255, unique=True)
-    date = models.DateField("Date Played")
-    
-    attendance = models.IntegerField("Attendance", null=True, blank=True)
-	venue = models.ForeignKey('venues.Venue', on_delete=models.PROTECT, null=False)
-	
-	home_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False)
-	away_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False)
-
-	winner = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False)
-
+	"""
+	An Opta game.
+	"""
+	# Opta UUID (NB: Different than Django-generated pk/id) 
+	uuid = models.CharField("Opta uID", max_length=255, unique=True)
+	date = models.DateField("Date Played")
+	attendance = models.IntegerField("Attendance", null=True, blank=True)
+	venue = models.ForeignKey('venues.Venue', on_delete=models.PROTECT, null=False, related_name="game_venue")
+	home_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False, related_name="game_home_team")
+	away_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False, related_name="game_away_team")
+	winner = models.ForeignKey('teams.Team', on_delete=models.PROTECT, null=False, related_name="game_winner")
 	first_half_time = models.IntegerField("1st Half Length (mins)")
 	second_half_time = models.IntegerField("2nd Half Length (mins)")
 	
