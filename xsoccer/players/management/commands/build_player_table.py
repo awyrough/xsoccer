@@ -70,68 +70,133 @@ class Command(BaseCommand):
             
             # Iterate over the children within <SoccerDocument>
             for item in xml_utils.get_children(child):
-                if is_tag(item, "Team") == False:
-                    continue #skip if not the relevant <Team> child
+                if is_tag(item, "Team"):
+                    # Iterate over the children within <Team> objects
+                    for i in xml_utils.get_children(item):
+                        #skip if not the relevant <Player> child
+                        if is_tag(i, "Player") == False:
+                            continue 
 
-                # Iterate over the children within <Team> objects
-                for i in xml_utils.get_children(item):
-                    #skip if not the relevant <Player> child
-                    if is_tag(i, "Player") == False:
-                        continue 
+                        uuid = xml_utils.get_attrib(i, "uID")
+                        first_name = xml_utils.pull_text_if_exists(i,
+                                                                   "Stat", 
+                                                                   "first_name")
+                        first_name = unicode_utils.remove_accents(first_name)
+                        last_name = xml_utils.pull_text_if_exists(i, 
+                                                                  "Stat", 
+                                                                  "last_name")
+                        last_name = unicode_utils.remove_accents(last_name)
+                        known_name = xml_utils.pull_text_if_exists(i, 
+                                                                  "Stat", 
+                                                                  "known_name")
+                        known_name = unicode_utils.remove_accents(known_name)
+                        birth_place = xml_utils.pull_text_if_exists(
+                            i, 
+                            "Stat",
+                            "birth_place")
+                        birth_date = xml_utils.pull_text_if_exists(i,
+                            "Stat",
+                            "birth_date")
+                        if birth_date is None:
+                            birth_date = "1900-01-01"
+                        birth_date = datetime.datetime.strptime(birth_date,"%Y-%m-%d").date()
+                        nationality = xml_utils.pull_text_if_exists(
+                            i,
+                            "Stat",
+                            "first_nationality")
+                        weight = xml_utils.pull_text_if_exists(i, "Stat", "weight")
+                        height = xml_utils.pull_text_if_exists(i, "Stat", "height")
+                        position = xml_utils.pull_text_if_exists(i, 
+                                                                 "Stat", 
+                                                                 "real_position")
+                        position_side = xml_utils.pull_text_if_exists(
+                            i,
+                            "Stat",
+                            "real_position_side")
+                        country = xml_utils.pull_text_if_exists(i,
+                                                                "Stat",
+                                                                "country")
 
-                    uuid = xml_utils.get_attrib(i, "uID")
-                    first_name = xml_utils.pull_text_if_exists(i,
-                                                               "Stat", 
-                                                               "first_name")
-                    first_name = unicode_utils.remove_accents(first_name)
-                    last_name = xml_utils.pull_text_if_exists(i, 
-                                                              "Stat", 
-                                                              "last_name")
-                    last_name = unicode_utils.remove_accents(last_name)
-                    birth_place = xml_utils.pull_text_if_exists(
-                        i, 
-                        "Stat",
-                        "birth_place")
-                    birth_date = xml_utils.pull_text_if_exists(i,
-                        "Stat",
-                        "birth_date")
-                    birth_date = datetime.datetime.strptime(birth_date,"%Y-%m-%d").date()
-                    nationality = xml_utils.pull_text_if_exists(
-                        i,
-                        "Stat",
-                        "first_nationality")
-                    weight = xml_utils.pull_text_if_exists(i, "Stat", "weight")
-                    height = xml_utils.pull_text_if_exists(i, "Stat", "height")
-                    position = xml_utils.pull_text_if_exists(i, 
-                                                             "Stat", 
-                                                             "real_position")
-                    position_side = xml_utils.pull_text_if_exists(
-                        i,
-                        "Stat",
-                        "real_position_side")
-                    country = xml_utils.pull_text_if_exists(i,
-                                                            "Stat",
-                                                            "country")
+                        player = Player(uuid=uuid,
+                                        first_name=first_name,
+                                        last_name=last_name,
+                                        known_name=known_name,
+                                        birth_place=birth_place,
+                                        birth_date=birth_date,
+                                        nationality=nationality,
+                                        weight=weight,
+                                        height=height,
+                                        position=position,
+                                        position_side=position_side,
+                                        country=country)
+                        new_players.append(player)
+                #look through the PlayerChanges additions
+                if is_tag(item,"PlayerChanges"):
+                    for i in xml_utils.get_children(item):
+                        if is_tag(i,"Team"):
+                            for ii in xml_utils.get_children(i):
+                                if is_tag(ii,"Player"):
+                                    uuid = xml_utils.get_attrib(ii, "uID")
+                                    first_name = xml_utils.pull_text_if_exists(ii,
+                                                                               "Stat", 
+                                                                               "first_name")
+                                    first_name = unicode_utils.remove_accents(first_name)
+                                    last_name = xml_utils.pull_text_if_exists(ii, 
+                                                                              "Stat", 
+                                                                              "last_name")
+                                    last_name = unicode_utils.remove_accents(last_name)
+                                    known_name = xml_utils.pull_text_if_exists(ii, 
+                                                                              "Stat", 
+                                                                              "known_name")
+                                    known_name = unicode_utils.remove_accents(known_name)
+                                    birth_place = xml_utils.pull_text_if_exists(
+                                        ii, 
+                                        "Stat",
+                                        "birth_place")
+                                    birth_date = xml_utils.pull_text_if_exists(ii,
+                                        "Stat",
+                                        "birth_date")
+                                    if birth_date is None:
+                                        birth_date = "1900-01-01"
+                                    birth_date = datetime.datetime.strptime(birth_date,"%Y-%m-%d").date()
+                                    nationality = xml_utils.pull_text_if_exists(
+                                        ii,
+                                        "Stat",
+                                        "first_nationality")
+                                    weight = xml_utils.pull_text_if_exists(ii, "Stat", "weight")
+                                    height = xml_utils.pull_text_if_exists(ii, "Stat", "height")
+                                    position = xml_utils.pull_text_if_exists(ii, 
+                                                                             "Stat", 
+                                                                             "real_position")
+                                    position_side = xml_utils.pull_text_if_exists(
+                                        ii,
+                                        "Stat",
+                                        "real_position_side")
+                                    country = xml_utils.pull_text_if_exists(ii,
+                                                                            "Stat",
+                                                                            "country")
 
-                    player = Player(uuid=uuid,
-                                    first_name=first_name,
-                                    last_name=last_name,
-                                    birth_place=birth_place,
-                                    birth_date=birth_date,
-                                    nationality=nationality,
-                                    weight=weight,
-                                    height=height,
-                                    position=position,
-                                    position_side=position_side,
-                                    country=country)
-                    new_players.append(player)
+                                    player = Player(uuid=uuid,
+                                                    first_name=first_name,
+                                                    last_name=last_name,
+                                                    known_name=known_name,
+                                                    birth_place=birth_place,
+                                                    birth_date=birth_date,
+                                                    nationality=nationality,
+                                                    weight=weight,
+                                                    height=height,
+                                                    position=position,
+                                                    position_side=position_side,
+                                                    country=country)
 
+                                    if player not in new_players:
+                                        new_players.append(player)
         # get all existing uuids
         existing_player_uuids = Player.objects.all().values_list("uuid")
 
         # log out for audit and save if not dry run and it is a new team
         for player in new_players:
-            print player.__dict__
+            print player
             if is_dry_run == False and player.uuid not in existing_player_uuids:
                 player.save()
 

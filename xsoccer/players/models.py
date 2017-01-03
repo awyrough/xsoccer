@@ -37,6 +37,8 @@ class Player(models.Model):
     first_name = models.CharField("First Name", max_length=255)
     last_name = models.CharField("Last Name", max_length=255)
 
+    known_name = models.CharField("Known Name", max_length=255, null=True)
+
     birth_date = models.DateField("Birth Date", null=True)
     birth_place = models.CharField("Birth Place", max_length=255, null=True)
     nationality = models.CharField("Nationality", max_length=255, null=True)
@@ -49,6 +51,9 @@ class Player(models.Model):
     position_side = models.CharField("Position Side of Choice", choices=POSITION_SIDES, max_length=255, null=True)
 
     def __str__(self):
-		return "%s %s (uID = %s)" % (self.first_name, 
+        if self.known_name:
+            return "%s (uID = %s)" % (self.known_name, self.uuid)
+        else:
+            return "%s %s (uID = %s)" % (self.first_name, 
                                              self.last_name, 
                                              self.uuid)
