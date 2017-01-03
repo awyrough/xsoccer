@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-
+# Create your models here.
 class Venue(models.Model):
     """
     Generic venues (i.e. stadiums).
@@ -17,3 +17,6 @@ class Venue(models.Model):
 
     #capacity = models.IntegerField(default=0,null=True)
     #surface = models.CharField(...)
+
+    def __str__(self):
+        return self.name
