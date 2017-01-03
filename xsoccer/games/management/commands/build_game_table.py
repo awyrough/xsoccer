@@ -73,33 +73,33 @@ class Command(BaseCommand):
                             winner = xml_utils.get_attrib(xml_utils.get_tag(i,"Result"),"Winner")
                             date = xml_utils.pull_text_if_exists(i,"Date")
                             date = datetime.datetime.strptime(date[:len(date)-5],'%Y%m%dT%H%M%S')
-                            print attendance
-                            print winner
-                            print date
 
                         #Pull information from <Stat Type ="first_half_time"> child
                         if is_tag(i,"Stat"):
                             if is_tag_and_type(i, "Stat", "first_half_time"):
                                 first_half_time = int(i.text)
-                                print first_half_time
                         #Pull information from <Stat Type ="second_half_time"> child
                         if is_tag(i,"Stat"):
                             if is_tag_and_type(i, "Stat", "second_half_time"):
                                 second_half_time = int(i.text)
-                                print second_half_time
                         #Pull information from <TeamData> children
                         if is_tag(i, "TeamData"):
                             if xml_utils.get_attrib(i,"Side") == "Home":
                                 home_team = xml_utils.get_attrib(i,"TeamRef")
-                                print home_team
                             if xml_utils.get_attrib(i,"Side") == "Away":
                                 away_team = xml_utils.get_attrib(i,"TeamRef")
-                                print away_team
                 # Work with the <Venue> object
                 if is_tag(item, "Venue"):
                     venue = xml_utils.get_attrib(item,"uID")
-                    print venue
 
+        print "\n"
+        print "attendance = ", attendance
+        print "winner = ", winner
+        print "date = ", date
+        print "first_half_time = ", first_half_time
+        print "second_half_time = ", second_half_time
+        print "home_team = ", home_team
+        print "away_team = ", away_team
         # game = Game(uuid=uuid,
         #                 date=date,
         #                 attendance=attendance,
