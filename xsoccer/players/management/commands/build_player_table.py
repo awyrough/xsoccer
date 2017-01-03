@@ -89,7 +89,8 @@ class Command(BaseCommand):
                         known_name = xml_utils.pull_text_if_exists(i, 
                                                                   "Stat", 
                                                                   "known_name")
-                        known_name = unicode_utils.remove_accents(known_name)
+                        if known_name:
+                            known_name = unicode_utils.remove_accents(known_name)
                         birth_place = xml_utils.pull_text_if_exists(
                             i, 
                             "Stat",
@@ -148,7 +149,8 @@ class Command(BaseCommand):
                                     known_name = xml_utils.pull_text_if_exists(ii, 
                                                                               "Stat", 
                                                                               "known_name")
-                                    known_name = unicode_utils.remove_accents(known_name)
+                                    if known_name:
+                                        known_name = unicode_utils.remove_accents(known_name)
                                     birth_place = xml_utils.pull_text_if_exists(
                                         ii, 
                                         "Stat",
