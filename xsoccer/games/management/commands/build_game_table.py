@@ -1,8 +1,10 @@
 ### Read from F9 files and construct Games models
 import utils.xmls as xml_utils
+import datetime
 
 from teams.models import Team
 from games.models import Game
+from venues.models import Venue
 
 from django.core.management.base import BaseCommand
 
@@ -12,8 +14,7 @@ def is_tag(xml_obj, tag):
 
 def is_tag_and_type(xml_obj, tag, type):
     """Return true if the XML object is of the right Tag and Type"""
-    return xml_obj.tag == tag \
-            && xml_utils.get_attrib(xml_obj,"Type") == type
+    return xml_obj.tag == tag and xml_utils.get_attrib(xml_obj,"Type") == type
    
 class Command(BaseCommand):
     """
@@ -71,19 +72,21 @@ class Command(BaseCommand):
                             attendance = xml_utils.pull_text_if_exists(i,"Attendance")
                             winner = xml_utils.get_attrib(xml_utils.get_tag(i,"Result"),"Winner")
                             date = xml_utils.pull_text_if_exists(i,"Date")
-                            date = datetime.strptime(date[:len(date)-5],'%Y%m%dT%H%M%S')
+                            date = datetime.datetime.strptime(date[:len(date)-5],'%Y%m%dT%H%M%S')
                             print attendance
                             print winner
                             print date
 
                         #Pull information from <Stat Type ="first_half_time"> child
-                        if is_tag_and_type(i, "Stat", "first_half_time"):
-                            first_half_time = xml_utils.pull_text_if_exists(i,"Stat", "first_half_time")
-                            print first_half_time
+                        if is_tag(i,"Stat"):
+                            if is_tag_and_type(i, "Stat", "first_half_time"):
+                                first_half_time = int(i.text)
+                                print first_half_time
                         #Pull information from <Stat Type ="second_half_time"> child
-                        if is_tag_and_type(i, "Stat", "second_half_time"):
-                            second_half_time = xml_utils.pull_text_if_exists(i,"Stat", "second_half_time")
-                            print second_half_time
+                        if is_tag(i,"Stat"):
+                            if is_tag_and_type(i, "Stat", "second_half_time"):
+                                second_half_time = int(i.text)
+                                print second_half_time
                         #Pull information from <TeamData> children
                         if is_tag(i, "TeamData"):
                             if xml_utils.get_attrib(i,"Side") == "Home":
@@ -96,23 +99,25 @@ class Command(BaseCommand):
                 if is_tag(item, "Venue"):
                     venue = xml_utils.get_attrib(item,"uID")
                     print venue
-        game = Game(uuid=uuid,
-                        date=date,
-                        attendance=attendance,
-                        venue=venue,
-                        home_team=home_team,
-                        away_team=away_team,
-                        winner=winner,
-                        first_half_time=first_half_time,
-                        second_half_time=second_half_time)
-        new_games.append(game)
 
-        # get all existing uuids
-        existing_game_uuids = Game.objects.all().values_list("uuid")
+        # game = Game(uuid=uuid,
+        #                 date=date,
+        #                 attendance=attendance,
+        #                 venue=Venue.objects.get(uuid=venue),
+        #                 home_team=Team.objects.get(uuid=home_team),
+        #                 away_team=Team.objects.get(uuid=away_team),
+        #                 winner=Team.objects.get(uuid=winner),
+        #                 first_half_time=first_half_time,
+        #                 second_half_time=second_half_time)
 
-        # log out for audit and save if not dry run and it is a new team
-        for game in new_games:
-            print game.__dict__
-            if is_dry_run == False and game.uuid not in existing_game_uuids:
-                game.save()
+        # new_games.append(game)
+
+        # # get all existing uuids
+        # existing_game_uuids = Game.objects.all().values_list("uuid")
+
+        # # log out for audit and save if not dry run and it is a new team
+        # for game in new_games:
+        #     print game.__dict__
+        #     if is_dry_run == False and game.uuid not in existing_game_uuids:
+        #         game.save()
 
