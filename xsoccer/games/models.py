@@ -32,5 +32,8 @@ class Game(models.Model):
 	def game_length(self):
 		return self.first_half_time + self.second_half_time
 
+	def atmosphere(self):
+		return (float(self.attendance) / float(self.venue.capacity)) * 100
+
 	class Meta:
 		unique_together = ["home_team", "away_team", "date"]
