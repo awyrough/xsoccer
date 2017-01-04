@@ -46,7 +46,7 @@ class Command(BaseCommand):
         is_dry_run = options["dry_run"]
 
         new_teams = []
-        print "Importing game from %s" % data_filename
+        print "Importing a game from %s" % data_filename
         if is_dry_run:
             print "This is a dry run and will not save any data"
 
