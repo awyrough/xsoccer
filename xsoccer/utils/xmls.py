@@ -49,3 +49,20 @@ def pull_text_if_exists(xml_obj, tag_name, type_name=""):
         if text == "Unknown":
             text = None
     return text
+
+
+def pull_attribute_if_exists(xml_obj, tag_name, attribute_name=""):
+    """
+    Returns the attribute value of the matching tag and attribute from 
+    among the children
+    """
+    result = None
+    for x in get_children(xml_obj):
+        if x.tag == tag_name:
+            attributes = x.attrib
+
+            if attribute_name in attributes:
+                result = attributes[attribute_name]
+    
+    return result
+                
