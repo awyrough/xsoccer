@@ -1,0 +1,54 @@
+#Note: When building out the DB; everything that was printed running the commands below, was something that was successfully saved into the DB
+
+
+
+#build teams
+
+python manage.py build_team_table_ALL_FILES \
+        --data_filepath=data/f9/
+
+
+
+
+#build venues pt 1 (From game files)
+
+python manage.py build_venue_table_ALL_FILES \
+        --data_filepath=data/f9/
+
+
+
+
+#build venues pt 2 (from 2016 squad info)
+
+python manage.py build_venue_table_v2 \
+        --data_filename=data/f40/squads-2016.xml
+#...nothing added
+
+
+
+
+#build venues pt 3 (from 2015 squad info)
+
+python manage.py build_venue_table_v2 \
+        --data_filename=data/f40/squads-2015.xml
+#...nothing added
+
+
+
+
+#build players (from 2016 squad info)
+
+python manage.py build_player_table \
+        --data_filename=data/f40/squads-2016.xml
+
+
+
+#build players pt 2 (from 2015 squad info)
+
+python manage.py build_player_table \
+        --data_filename=data/f40/squads-2015.xml
+
+
+#build salaries
+python manage.py build_salary_table \
+        --data_filename=data/opta_playerID_salary.csv
