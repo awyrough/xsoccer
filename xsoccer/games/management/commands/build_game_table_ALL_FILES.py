@@ -20,7 +20,9 @@ def is_tag_and_type(xml_obj, tag, type):
 class Command(BaseCommand):
     """
     Sample usage:
-    python manage.py build_game_table_ALL_FILES --dry_run --data_filepath=data/f9/
+    python manage.py build_game_table_ALL_FILES \
+        --dry_run \
+        --data_filepath=data/f9/
     """
     help = "Populate game table"
 
@@ -120,12 +122,11 @@ class Command(BaseCommand):
                                     second_half_time=second_half_time)
                 new_games.append(game)
 
-                # get all existing uuids
-                existing_game_uuids = Game.objects.all().values_list("uuid")
-
                 # log out for audit and save if not dry run and it is a new team
                 for game in new_games:
-                    print game.__dict__
+                    # get all existing uuids
+                    existing_game_uuids = Game.objects.all().values_list("uuid")
                     if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
                         game.save()
+                        print game
 

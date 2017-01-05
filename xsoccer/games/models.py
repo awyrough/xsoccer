@@ -14,7 +14,7 @@ class Game(models.Model):
 	venue = models.ForeignKey('venues.Venue', on_delete=models.PROTECT, related_name="game_venue")
 	home_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, related_name="game_home_team")
 	away_team = models.ForeignKey('teams.Team', on_delete=models.PROTECT, related_name="game_away_team")
-	winner = models.ForeignKey('teams.Team', on_delete=models.PROTECT, related_name="game_winner")
+	winner = models.ForeignKey('teams.Team', on_delete=models.SET_NULL, null=True, blank=True, related_name="game_winner")
 	first_half_time = models.IntegerField("1st Half Length (mins)")
 	second_half_time = models.IntegerField("2nd Half Length (mins)")
 	
