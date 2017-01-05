@@ -1,5 +1,6 @@
 ### Read from F9 files and construct Teams models
 import utils.xmls as xml_utils
+import utils.unicode as unicode_utils
 
 from venues.models import Venue
 
@@ -53,6 +54,7 @@ class Command(BaseCommand):
                 if is_venue(item) == False:
                     continue
                 name = xml_utils.get_tag(item, "Name").text
+                name = unicode_utils.remove_accents(name)
                 uuid = xml_utils.get_attrib(item, "uID")
                 country = xml_utils.get_tag(item, "Country").text
                 venue = Venue(name=name, uuid=uuid, country=country)
