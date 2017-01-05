@@ -41,8 +41,6 @@ class Command(BaseCommand):
         if is_dry_run:
             print "This is a dry run and will not save any data"
 
-        xml_data_root = xml_utils.get_root_from_file(data_filename)
-
         count = 0
         new_salaries = []
         for salary_data in reader:
@@ -50,6 +48,7 @@ class Command(BaseCommand):
             if count == 0: #skip header row
                 count = 1
                 continue
+
             player = Player.objects.get(uuid=salary_data[0])
             season = int(salary_data[1])
             base_salary = float(salary_data[2])
