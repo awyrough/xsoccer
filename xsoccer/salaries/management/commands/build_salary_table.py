@@ -44,39 +44,32 @@ class Command(BaseCommand):
         xml_data_root = xml_utils.get_root_from_file(data_filename)
 
         count = 0
+        new_salaries = []
         for salary_data in reader:
             
-            if count == 0: #skip header
+            if count == 0: #skip header row
                 count = 1
                 continue
-            
-            date = datetime.datetime.strptime(game_data[0], "%m/%d/%y").date()
-            home_team_id = game_data[1]
-            home_team = Team.objects.get(sw_id=home_team_id)
-            away_team = Team.objects.get(sw_id=game_data[5])
-            new_game = Game.objects.create(date=date,
-                                           home_team=home_team,
-                                           away_team=away_team)
+            player = Player.objects.get(uuid=salary_data[0])
+            season = int(salary_data[1])
+            base_salary = float(salary_data[2])
+            compensation = float(salary_data[3])
+
+            salary_info = Salary(player=player,
+                                    season=season,
+                                    base_salary=base_salary,
+                                    compensation=compensation)
+            new_salaries.append(salary_info)
 
 
+        existing_salary_info = Salary.objects.all().values_list("season")
+        
+        #Given this salary data is so manual, I only want to load it in once and never restate it (at least until 2017)
+        if len(existing_salary_info) > 0:
+            print "Salary already exists in the DB; wipe it before re-running and continuing with this..."
 
-
-
-        # for child in xml_utils.get_children(xml_data_root):
-        #     # Iterate over each item
-        #     for item in xml_utils.get_children(child):
-        #         if is_team(item) == False:
-        #             continue
-        #         name = xml_utils.get_tag(item, "Name").text
-        #         uuid = xml_utils.get_attrib(item, "uID")
-        #         team = Team(name=name, uuid=uuid)
-        #         new_teams.append(team)
-
-        # # get all existing uuids
-        # existing_team_uuids = Team.objects.all().values_list("uuid")
-
-        # # log out for audit and save if not dry run and it is a new team
-        # for team in new_teams:
-        #     print team.__dict__
-        #     if is_dry_run == False and team.uuid not in existing_team_uuids:
-        #         team.save()
+        else:
+            for salary in new_salaries:
+                print salary #print salary.__dict__
+                if is_dry_run == False:
+                    salary.save()
