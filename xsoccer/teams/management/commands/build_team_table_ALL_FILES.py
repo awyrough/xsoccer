@@ -66,9 +66,8 @@ class Command(BaseCommand):
 
                 # get all existing uuids
                 existing_team_uuids = Team.objects.all().values_list("uuid")
-
                 # log out for audit and save if not dry run and it is a new team
                 for team in new_teams:
-                    print team.__dict__
-                    if is_dry_run == False and team.uuid not in existing_team_uuids:
+                    if is_dry_run == False and team.uuid not in [u[0] for u in existing_team_uuids]:
                         team.save()
+                        print team.__dict__ 

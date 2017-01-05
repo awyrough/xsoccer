@@ -126,6 +126,6 @@ class Command(BaseCommand):
                 # log out for audit and save if not dry run and it is a new team
                 for game in new_games:
                     print game.__dict__
-                    if is_dry_run == False and game.uuid not in existing_game_uuids:
+                    if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
                         game.save()
 

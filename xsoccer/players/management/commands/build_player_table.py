@@ -193,12 +193,14 @@ class Command(BaseCommand):
 
                                     if player not in new_players:
                                         new_players.append(player)
-        # get all existing uuids
-        existing_player_uuids = Player.objects.all().values_list("uuid")
+        
 
         # log out for audit and save if not dry run and it is a new team
         for player in new_players:
-            print player
-            if is_dry_run == False and player.uuid not in existing_player_uuids:
+            # get all existing uuids
+            existing_player_uuids = Player.objects.all().values_list("uuid")
+            
+            if is_dry_run == False and player.uuid not in [u[0] for u in existing_player_uuids]:
                 player.save()
+                print player
 

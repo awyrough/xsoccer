@@ -66,11 +66,12 @@ class Command(BaseCommand):
                         venue = Venue(name=name, uuid=uuid, country=country)
                         new_venues.append(venue)
 
-                # get all existing uuids
-                existing_venue_uuids = Venue.objects.all().values_list("uuid")
-
+                
                 # log out for audit and save if not dry run and it is a new venue
                 for venue in new_venues:
-                    print venue.__dict__
-                    if is_dry_run == False and venue.uuid not in existing_venue_uuids:
+                    # get all existing uuids
+                    existing_venue_uuids = Venue.objects.all().values_list("uuid")
+
+                    if is_dry_run == False and venue.uuid not in [u[0] for u in existing_venue_uuids]:
                         venue.save()
+                        print venue.__dict__

@@ -1,6 +1,7 @@
 ### Read from custom CSV file and construct Salary models
 import csv
 from players.models import Player
+from salaries.models import Salary
 
 from django.core.management.base import BaseCommand
 
@@ -69,6 +70,6 @@ class Command(BaseCommand):
 
         else:
             for salary in new_salaries:
-                print salary #print salary.__dict__
                 if is_dry_run == False:
                     salary.save()
+                    print salary #print salary.__dict__
