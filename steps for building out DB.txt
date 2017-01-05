@@ -52,3 +52,8 @@ python manage.py build_player_table \
 #build salaries
 python manage.py build_salary_table \
         --data_filename=data/opta_playerID_salary.csv
+
+
+#build games
+python manage.py build_game_table_ALL_FILES \
+        --data_filepath=data/f9/
