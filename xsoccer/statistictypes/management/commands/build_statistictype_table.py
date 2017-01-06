@@ -1,5 +1,6 @@
 ### Read from custom CSV file and construct statistic type models
 import csv
+import utils.unicode as unicode_utils
 
 from statistictypes.models import StatisticType
 
@@ -52,7 +53,9 @@ class Command(BaseCommand):
 
             sw_id = int(data[0])
             stat = data[1]
+            print stat
             definition = data[2]
+            definition = unicode_utils.remove_accents(definition) #in case there are strange characters
 
             statistic = StatisticType(sw_id=sw_id,
                                     opta_statistic_type_name=stat,
@@ -61,13 +64,17 @@ class Command(BaseCommand):
 
 
         # log out for audit and save if not dry run and it is a new team
+        saved_count = 0
         for statistic in new_statistics:
             # get all existing statistic IDs
             existing_statistics = StatisticType.objects.all().values_list("sw_id")
-            
             if is_dry_run == False and statistic.sw_id not in [u[0] for u in existing_statistics]:
                 statistic.save()
                 print statistic
+                saved_count += 1
 
             elif is_dry_run == True:
                 print statistic
+
+
+        print "\n# statistics saved to DB = %s" % (str(saved_count))

@@ -57,3 +57,7 @@ python manage.py build_salary_table \
 #build games
 python manage.py build_game_table_ALL_FILES \
         --data_filepath=data/f9/
+
+#build statistictypes
+python manage.py build_statistictype_table \
+        --data_filename=data/F9_Statistic_Types.csv
