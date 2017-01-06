@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'venues',
     'games',
     'salaries',
+    'statistictypes',
 ]
 
 MIDDLEWARE = [
