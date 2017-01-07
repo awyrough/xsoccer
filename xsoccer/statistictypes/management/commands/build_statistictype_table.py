@@ -53,7 +53,6 @@ class Command(BaseCommand):
 
             sw_id = int(data[0])
             stat = data[1]
-            print stat
             definition = data[2]
             definition = unicode_utils.remove_accents(definition) #in case there are strange characters
 

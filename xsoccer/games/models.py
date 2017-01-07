@@ -19,8 +19,10 @@ class Game(models.Model):
 	second_half_time = models.IntegerField("2nd Half Length (mins)")
 	
 	def __str__(self):
-		return "%s at %s on %s (Winner = %s)" % (
-			self.away_team, self.home_team, self.date, self.winner)
+		return "%s at %s on %s" % (
+			self.away_team, self.home_team, self.date)
+		# return "%s at %s on %s (W = %s)" % (
+		# 	self.away_team, self.home_team, self.date, self.winner)
 
 	def location(self):
 		# The venue portion should always be populated for Opta games

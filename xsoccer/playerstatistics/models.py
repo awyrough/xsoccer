@@ -15,4 +15,4 @@ class PlayerStatistic(models.Model):
     value = models.IntegerField("statistic_value", default = 0, null=False)
 
     def __str__(self):
-    	return "%s for %s in %s" % (self.statistic, self.game, self.game)
+    	return "%s for %s in %s" % (self.statistic, self.player, self.game)

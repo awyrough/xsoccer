@@ -56,19 +56,31 @@ class Command(BaseCommand):
         for root_dir, sub_dirs, filenames in os.walk(data_filepath):
             for f in filenames:
                 xml_file = os.path.join(data_filepath, f)
-
+                print f
                 new_games = []
 
-                #Open up F40 and find root: <SoccerFeed>
+                #Open up F9 and find root: <SoccerFeed>
                 xml_data_root = xml_utils.get_root_from_file(xml_file)
+                
+                count_matches = 0
+                for child in xml_utils.get_children(xml_data_root):
+                    if is_tag(child, "SoccerDocument"):
+                        count_matches += 1
 
                 # Iterate over the children within <SoccerFeed>
                 for child in xml_utils.get_children(xml_data_root):
                     if is_tag(child, "SoccerDocument") == False:
                         continue #skip if not the relevant <SoccerDocument> child
                     
-                    uuid = xml_utils.get_attrib(child, "uID")
+                    #Evaluate if the game has two components; if so, ignore the repeat
+                    MatchData = xml_utils.get_tag(child, "MatchData")
+                    MatchInfo = xml_utils.get_tag(MatchData, "MatchInfo")
+                    match_type = xml_utils.get_attrib(MatchInfo,"MatchType")
+                    if count_matches == 2 and match_type == "1st Leg":
+                        continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
+                    uuid = xml_utils.get_attrib(child, "uID")
+                    print uuid
                     # Iterate over the children within <SoccerDocument>
                     for item in xml_utils.get_children(child):
                         
@@ -121,12 +133,13 @@ class Command(BaseCommand):
                                     first_half_time=first_half_time,
                                     second_half_time=second_half_time)
                 new_games.append(game)
-
                 # log out for audit and save if not dry run and it is a new team
                 for game in new_games:
                     # get all existing uuids
                     existing_game_uuids = Game.objects.all().values_list("uuid")
-                    if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
-                        game.save()
-                        print game
+                    print game.uuid in [u[0] for u in existing_game_uuids]
+                    
+                    # if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
+                    #     game.save()
+                    #     print game
 

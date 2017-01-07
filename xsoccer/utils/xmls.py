@@ -11,6 +11,15 @@ def get_children(xml_obj):
     """Return the XML elements one level down"""
     return [x for x in xml_obj]
 
+def get_child_count(xml_obj, child_of_interest):
+    """Return the XML elements one level down"""
+    children = get_children(xml_obj)
+    count = 0
+    for c in children:
+        if c.tag == child_of_interest:
+            count += 1
+    return count
+
 def get_attrib(xml_obj, attrib):
     """Get an arbitrary XML attribute"""
     return xml_obj.attrib[attrib]
