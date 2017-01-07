@@ -61,6 +61,7 @@ class Command(BaseCommand):
         saved_count = 0
         pull_count = 0
         file_count = 0
+
         for root_dir, sub_dirs, filenames in os.walk(data_filepath):
             for f in filenames:
                 file_start = time.time()
@@ -98,7 +99,7 @@ class Command(BaseCommand):
                         continue #skip if not the relevant <Stat> child
                     
                     stat_type = xml_utils.get_attrib(child, "Type")
-                    FT_value = float(child.text)
+                    value = float(child.text)
                     #following values will be None if they aren't present (i.e. for formation)
                     FH_value = xml_utils.get_attrib_if_exists(child, "FH")
                     if FH_value: 
@@ -117,7 +118,7 @@ class Command(BaseCommand):
                         game=Game.objects.get(uuid=game_uuid)
                         ,team=Team.objects.get(uuid=team_uuid)
                         ,statistic=StatisticType.objects.get(opta_statistic_type_name=stat_type)
-                        ,FT_value=FT_value
+                        ,value=value
                         ,FH_value=FH_value
                         ,SH_value=SH_value
                         ,ETFH_value=ETFH_value
