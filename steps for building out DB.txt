@@ -3,7 +3,6 @@
 
 
 #build teams
-
 python manage.py build_team_table_ALL_FILES \
         --data_filepath=data/f9/
 
@@ -11,7 +10,6 @@ python manage.py build_team_table_ALL_FILES \
 
 
 #build venues pt 1 (From game files)
-
 python manage.py build_venue_table_ALL_FILES \
         --data_filepath=data/f9/
 
@@ -19,7 +17,6 @@ python manage.py build_venue_table_ALL_FILES \
 
 
 #build venues pt 2 (from 2016 squad info)
-
 python manage.py build_venue_table_v2 \
         --data_filename=data/f40/squads-2016.xml
 #...nothing added
@@ -28,7 +25,6 @@ python manage.py build_venue_table_v2 \
 
 
 #build venues pt 3 (from 2015 squad info)
-
 python manage.py build_venue_table_v2 \
         --data_filename=data/f40/squads-2015.xml
 #...nothing added
@@ -37,16 +33,15 @@ python manage.py build_venue_table_v2 \
 
 
 #build players (from 2016 squad info)
-
 python manage.py build_player_table \
         --data_filename=data/f40/squads-2016.xml
 
 
 
 #build players pt 2 (from 2015 squad info)
-
 python manage.py build_player_table \
         --data_filename=data/f40/squads-2015.xml
+
 
 
 #build salaries
@@ -54,10 +49,27 @@ python manage.py build_salary_table \
         --data_filename=data/opta_playerID_salary.csv
 
 
+
 #build games
 python manage.py build_game_table_ALL_FILES \
         --data_filepath=data/f9/
 
+
+
 #build statistictypes
 python manage.py build_statistictype_table \
         --data_filename=data/F9_Statistic_Types.csv
+
+
+
+#build teamStatistics
+#should load in 103,286 stats from all F9 files
+python manage.py build_teamstatistic_table_ALL_FILES \
+        --data_filepath=data/f9/
+
+
+
+#build playerStatistics
+#should load in 1,153,759 stats from all F9 files
+python manage.py build_playerstatistic_table_ALL_FILES \
+        --data_filepath=data/f9/
