@@ -19,7 +19,15 @@ def is_tag(xml_obj, tag):
 def is_tag_and_type(xml_obj, tag, type):
     """Return true if the XML object is of the right Tag and Type"""
     return xml_obj.tag == tag and xml_utils.get_attrib(xml_obj,"Type") == type
-   
+
+def is_new_TeamStatistic(query_TS, list_from_DB):
+    """Return true if the TeamStatistic is not in the DB"""
+    for ts in list_from_DB:
+        if (ts.game == query_TS.game) and (ts.team == query_TS.team) and (ts.statistic == query_TS.statistic):
+            return False
+
+    return True
+
 class Command(BaseCommand):
     """
     Sample usage:
@@ -130,23 +138,20 @@ class Command(BaseCommand):
                         new_team_statistics.append(teamstat)
                         pull_count += 1
 
-                # log out for audit and save if not dry run and it is a new team
+                # log out for audit and save if not dry run and it is a new team statistic
+                team_stats_from_DB = TeamStatistic.objects.filter(game=Game.objects.get(uuid=game_uuid))
+
                 for teamstat in new_team_statistics:
-                    # get all existing stats for this game 
-                    #(don't want to get all, ever; would be too slow)
-                    existing_team_stats = TeamStatistic.objects.filter(game=Game.objects.get(uuid=game_uuid))
-                    if is_dry_run == True and teamstat not in existing_team_stats:
+                    if is_dry_run == True and is_new_TeamStatistic(teamstat,team_stats_from_DB):
                         potential_save_count += 1
                         #print teamstat
-                    elif is_dry_run == False and teamstat not in existing_team_stats:
+                    elif is_dry_run == False and is_new_TeamStatistic(teamstat,team_stats_from_DB):
                         teamstat.save()
                         saved_count += 1
                         #print teamstat
 
-                break
                 file_end = time.time()
-                print "# files parsed = %s;   file time = %s secs;   closing %s..." % (str(file_count), (file_end - file_start), f)
-                
+                print "# files parsed = %s;   file time = %s secs;   closing %s..." % (str(file_count), (file_end - file_start), f)               
 
         print "\n# team-statistics pulled from files = %s" % (str(pull_count))
         print "\n# team-statistics that would've been saved to DB = %s" % (str(potential_save_count))

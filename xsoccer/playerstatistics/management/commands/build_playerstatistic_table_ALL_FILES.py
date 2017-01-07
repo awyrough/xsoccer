@@ -20,7 +20,15 @@ def is_tag(xml_obj, tag):
 def is_tag_and_type(xml_obj, tag, type):
     """Return true if the XML object is of the right Tag and Type"""
     return xml_obj.tag == tag and xml_utils.get_attrib(xml_obj,"Type") == type
-   
+
+def is_new_PlayerStatistic(query_PS, list_from_DB):
+    """Return true if the PlayerStatistic is not in the DB"""
+    for ps in list_from_DB:
+        if (ps.game == query_PS.game) and (ps.player == query_PS.player) and (ps.statistic == query_PS.statistic):
+            return False
+
+    return True
+
 class Command(BaseCommand):
     """
     Sample usage:
@@ -67,9 +75,9 @@ class Command(BaseCommand):
                 file_start = time.time()
 
                 file_count += 1
+                file_saved_count = 0
+                
                 xml_file = os.path.join(data_filepath, f)
-
-                new_player_statistics = []
 
                 #Open up F9 and find root: <SoccerFeed>
                 xml_data_root = xml_utils.get_root_from_file(xml_file)
@@ -86,6 +94,7 @@ class Command(BaseCommand):
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
                 game_uuid = xml_utils.get_attrib(SoccerDocument, "uID")
+                game = Game.objects.get(uuid=game_uuid)
                 #Find <MatchData>
                 MatchData = xml_utils.get_tag(SoccerDocument, "MatchData")
 
@@ -94,14 +103,15 @@ class Command(BaseCommand):
                     if is_tag(child, "TeamData") == False:
                         continue #skip if not the relevant <TeamData> child
                     
-                    team_uuid = xml_utils.get_attrib(child, "TeamRef")
-
                     PlayerLineUp = xml_utils.get_tag(child, "PlayerLineUp")
 
                     #Iterate over players on a team
                     for MatchPlayer in xml_utils.get_children(PlayerLineUp):
                         player_uuid = xml_utils.get_attrib(MatchPlayer,"PlayerRef")
+                        player = Player.objects.get(uuid=player_uuid)
                         #print player_uuid
+                        new_player_statistics = []
+
                         for stats in MatchPlayer:
                             stat_type = xml_utils.get_attrib(stats, "Type")
                             #skip formation statistic; it's not really a KPI
@@ -111,30 +121,32 @@ class Command(BaseCommand):
                             value = float(stats.text)
 
                             playerstat = PlayerStatistic(
-                                game=Game.objects.get(uuid=game_uuid)
-                                ,player=Player.objects.get(uuid=player_uuid)
+                                game=game
+                                ,player=player
                                 ,statistic=StatisticType.objects.get(opta_statistic_type_name=stat_type)
                                 ,value=value
                                 )
 
                             new_player_statistics.append(playerstat)
                             pull_count += 1
-                            #print playerstat
 
-                # log out for audit and save if not dry run and it is a new team
-                for playerstat in new_player_statistics:
-                    # get all existing uuids for this game 
-                    #(don't want to get all, ever; would be too slow)
-                    existing_player_stats = PlayerStatistic.objects.filter(game=Game.objects.get(uuid=game_uuid))
-                    if is_dry_run == True and playerstat not in existing_player_stats:
-                        potential_save_count += 1
-                    elif is_dry_run == False and playerstat not in existing_player_stats:
-                        playerstat.save()
-                        saved_count += 1
-                        print playerstat
+                        # get all existing uuids, just want for the game/player; 
+                        # this is admittedly slow for game/players where the data is already populated; shouldn't be too bad though     
+                        existing_player_stats = PlayerStatistic.objects.filter(game=game).filter(player=player)
+                        existing_stats = [str(i.statistic.opta_statistic_type_name) for i in existing_player_stats]
+
+                        # log out for audit and save if not dry run and it is a new team
+                        for playerstat in new_player_statistics:
+                            if is_dry_run == True and playerstat.statistic.opta_statistic_type_name not in existing_stats:
+                                potential_save_count += 1
+                            elif is_dry_run == False and playerstat.statistic.opta_statistic_type_name not in existing_stats:
+                                playerstat.save()
+                                saved_count += 1
+                                file_saved_count += 1
+                                #print playerstat
 
                 file_end = time.time()
-                print "# files parsed = %s;   file time = %s secs;   closing %s..." % (str(file_count), (file_end - file_start), f)
+                print "# files parsed = %s;   saved PlayerStats = %s;   file time = %s secs;   closing %s..." % (str(file_count), (file_saved_count), (file_end - file_start), f)
                 
 
         print "\n# player-statistics pulled from files = %s" % (str(pull_count))
