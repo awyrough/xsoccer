@@ -24,6 +24,13 @@ def get_attrib(xml_obj, attrib):
     """Get an arbitrary XML attribute"""
     return xml_obj.attrib[attrib]
 
+def get_attrib_if_exists(xml_obj, attrib):
+    """Get an arbitrary XML attribute value if it exists"""
+    if attrib in xml_obj.attrib:
+        return xml_obj.attrib[attrib]
+    else:
+        return None
+        
 def get_tag(xml_obj, tag_name):
     """Returns the matching tag attribute from among the children"""
     children = get_children(xml_obj)
@@ -58,7 +65,6 @@ def pull_text_if_exists(xml_obj, tag_name, type_name=""):
         if text == "Unknown":
             text = None
     return text
-
 
 def pull_attribute_if_exists(xml_obj, tag_name, attribute_name=""):
     """
