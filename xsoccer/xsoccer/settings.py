@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'games',
     'salaries',
     'statistictypes',
+    'teamstatistics',
+    'playerstatistics',
 ]
 
 MIDDLEWARE = [
