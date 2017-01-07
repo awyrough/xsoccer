@@ -21,3 +21,6 @@ class TeamStatistic(models.Model):
 
     def __str__(self):
     	return "%s for %s in %s" % (self.statistic, self.team, self.game)
+
+    class Meta:
+        unique_together = (("game", "team", "statistic"),)

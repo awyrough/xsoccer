@@ -90,43 +90,45 @@ class Command(BaseCommand):
                 MatchData = xml_utils.get_tag(SoccerDocument, "MatchData")
 
                 #Find <TeamData>
-                TeamData = xml_utils.get_tag(MatchData, "TeamData")
-                team_uuid = xml_utils.get_attrib(TeamData, "TeamRef")
+                for team in xml_utils.get_children(MatchData):
+                    if is_tag(team,"TeamData") == False:
+                        continue #skip if it's not an actual <TeamData> team
+                    team_uuid = xml_utils.get_attrib(team, "TeamRef")
 
-                #Iterate through <TeamData> and only pay attention to <Stat>s
-                for child in xml_utils.get_children(TeamData):
-                    if is_tag(child, "Stat") == False:
-                        continue #skip if not the relevant <Stat> child
-                    
-                    stat_type = xml_utils.get_attrib(child, "Type")
-                    value = float(child.text)
-                    #following values will be None if they aren't present (i.e. for formation)
-                    FH_value = xml_utils.get_attrib_if_exists(child, "FH")
-                    if FH_value: 
-                        FH_value = float(FH_value)
-                    SH_value = xml_utils.get_attrib_if_exists(child, "SH")
-                    if SH_value: 
-                        SH_value = float(SH_value)
-                    ETFH_value = xml_utils.get_attrib_if_exists(child, "EFH")
-                    if ETFH_value: 
-                        ETFH_value = float(ETFH_value)
-                    ETSH_value = xml_utils.get_attrib_if_exists(child, "ESH")
-                    if ETSH_value: 
-                        ETSH_value = float(ETSH_value)
-                    
-                    teamstat = TeamStatistic(
-                        game=Game.objects.get(uuid=game_uuid)
-                        ,team=Team.objects.get(uuid=team_uuid)
-                        ,statistic=StatisticType.objects.get(opta_statistic_type_name=stat_type)
-                        ,value=value
-                        ,FH_value=FH_value
-                        ,SH_value=SH_value
-                        ,ETFH_value=ETFH_value
-                        ,ETSH_value=ETSH_value
-                        )
-                    
-                    new_team_statistics.append(teamstat)
-                    pull_count += 1
+                    #Iterate through <TeamData> and only pay attention to <Stat>s
+                    for child in xml_utils.get_children(team):
+                        if is_tag(child, "Stat") == False:
+                            continue #skip if not the relevant <Stat> child
+                        
+                        stat_type = xml_utils.get_attrib(child, "Type")
+                        value = float(child.text)
+                        #following values will be None if they aren't present (i.e. for formation)
+                        FH_value = xml_utils.get_attrib_if_exists(child, "FH")
+                        if FH_value: 
+                            FH_value = float(FH_value)
+                        SH_value = xml_utils.get_attrib_if_exists(child, "SH")
+                        if SH_value: 
+                            SH_value = float(SH_value)
+                        ETFH_value = xml_utils.get_attrib_if_exists(child, "EFH")
+                        if ETFH_value: 
+                            ETFH_value = float(ETFH_value)
+                        ETSH_value = xml_utils.get_attrib_if_exists(child, "ESH")
+                        if ETSH_value: 
+                            ETSH_value = float(ETSH_value)
+                        
+                        teamstat = TeamStatistic(
+                            game=Game.objects.get(uuid=game_uuid)
+                            ,team=Team.objects.get(uuid=team_uuid)
+                            ,statistic=StatisticType.objects.get(opta_statistic_type_name=stat_type)
+                            ,value=value
+                            ,FH_value=FH_value
+                            ,SH_value=SH_value
+                            ,ETFH_value=ETFH_value
+                            ,ETSH_value=ETSH_value
+                            )
+                        
+                        new_team_statistics.append(teamstat)
+                        pull_count += 1
 
                 # log out for audit and save if not dry run and it is a new team
                 for teamstat in new_team_statistics:
@@ -135,11 +137,13 @@ class Command(BaseCommand):
                     existing_team_stats = TeamStatistic.objects.filter(game=Game.objects.get(uuid=game_uuid))
                     if is_dry_run == True and teamstat not in existing_team_stats:
                         potential_save_count += 1
+                        #print teamstat
                     elif is_dry_run == False and teamstat not in existing_team_stats:
                         teamstat.save()
                         saved_count += 1
-                        print teamstat
+                        #print teamstat
 
+                break
                 file_end = time.time()
                 print "# files parsed = %s;   file time = %s secs;   closing %s..." % (str(file_count), (file_end - file_start), f)
                 

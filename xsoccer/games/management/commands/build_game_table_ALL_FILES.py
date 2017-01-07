@@ -56,7 +56,6 @@ class Command(BaseCommand):
         for root_dir, sub_dirs, filenames in os.walk(data_filepath):
             for f in filenames:
                 xml_file = os.path.join(data_filepath, f)
-                print f
                 new_games = []
 
                 #Open up F9 and find root: <SoccerFeed>
@@ -80,7 +79,6 @@ class Command(BaseCommand):
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
                     uuid = xml_utils.get_attrib(child, "uID")
-                    print uuid
                     # Iterate over the children within <SoccerDocument>
                     for item in xml_utils.get_children(child):
                         
@@ -137,9 +135,8 @@ class Command(BaseCommand):
                 for game in new_games:
                     # get all existing uuids
                     existing_game_uuids = Game.objects.all().values_list("uuid")
-                    print game.uuid in [u[0] for u in existing_game_uuids]
-                    
-                    # if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
-                    #     game.save()
-                    #     print game
+
+                    if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
+                        game.save()
+                        print game
 
