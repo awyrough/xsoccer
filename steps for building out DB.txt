@@ -63,7 +63,7 @@ python manage.py build_statistictype_table \
 
 
 #build teamStatistics
-#should load in 103,286 stats from all F9 files
+#should load in 202,760 stats from all F9 files
 python manage.py build_teamstatistic_table_ALL_FILES \
         --data_filepath=data/f9/
 
