@@ -108,7 +108,7 @@ class Command(BaseCommand):
                             if stat_type == "formation_place":
                                 continue
 
-                            value = int(stats.text)
+                            value = float(stats.text)
 
                             playerstat = PlayerStatistic(
                                 game=Game.objects.get(uuid=game_uuid)

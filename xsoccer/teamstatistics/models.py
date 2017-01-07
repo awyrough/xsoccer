@@ -13,11 +13,11 @@ class TeamStatistic(models.Model):
     team = models.ForeignKey('teams.Team', on_delete=models.CASCADE, related_name="team_for_teamstats")
     statistic = models.ForeignKey('statistictypes.StatisticType', on_delete=models.CASCADE, related_name="stat_for_teamstats")
 
-    FH_value = models.IntegerField("FH Value", default = 0, null=False)
-    SH_value = models.IntegerField("SH Value", default = 0, null=False)
-    ETFH_value = models.IntegerField("ETFH Value", null=True)
-    ETSH_value = models.IntegerField("ETSH Value", null=True)
-    FT_value = models.IntegerField("FT Value", default = 0, null=False)
+    FH_value = models.FloatField("FH Value", default = 0.0, null=False)
+    SH_value = models.FloatField("SH Value", default = 0.0, null=False)
+    ETFH_value = models.FloatField("ETFH Value", null=True)
+    ETSH_value = models.FloatField("ETSH Value", null=True)
+    FT_value = models.FloatField("FT Value", default = 0.0, null=False)
 
     def __str__(self):
     	return "%s for %s in %s" % (self.statistic, self.team, self.game)

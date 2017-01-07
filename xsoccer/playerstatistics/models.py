@@ -12,7 +12,7 @@ class PlayerStatistic(models.Model):
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE, related_name="player_for_playerstats")
     statistic = models.ForeignKey('statistictypes.StatisticType', on_delete=models.CASCADE, related_name="stat_for_playerstats")
 
-    value = models.IntegerField("statistic_value", default = 0, null=False)
+    value = models.FloatField("value", default = 0.0, null=False)
 
     def __str__(self):
     	return "%s for %s in %s" % (self.statistic, self.player, self.game)

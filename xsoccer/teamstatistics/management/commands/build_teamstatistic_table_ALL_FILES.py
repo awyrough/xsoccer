@@ -98,16 +98,24 @@ class Command(BaseCommand):
                         continue #skip if not the relevant <Stat> child
                     
                     stat_type = xml_utils.get_attrib(child, "Type")
-                    FT_value = int(child.text)
+                    FT_value = float(child.text)
                     #following values will be None if they aren't present (i.e. for formation)
-                    FH_value = int(xml_utils.get_attrib_if_exists(child, "FH"))
-                    SH_value = int(xml_utils.get_attrib_if_exists(child, "SH"))
-                    ETFH_value = int(xml_utils.get_attrib_if_exists(child, "EFH"))
-                    ETSH_value = int(xml_utils.get_attrib_if_exists(child, "ESH"))
+                    FH_value = xml_utils.get_attrib_if_exists(child, "FH")
+                    if FH_value: 
+                        FH_value = float(FH_value)
+                    SH_value = xml_utils.get_attrib_if_exists(child, "SH")
+                    if SH_value: 
+                        SH_value = float(SH_value)
+                    ETFH_value = xml_utils.get_attrib_if_exists(child, "EFH")
+                    if ETFH_value: 
+                        ETFH_value = float(ETFH_value)
+                    ETSH_value = xml_utils.get_attrib_if_exists(child, "ESH")
+                    if ETSH_value: 
+                        ETSH_value = float(ETSH_value)
                     
                     teamstat = TeamStatistic(
                         game=Game.objects.get(uuid=game_uuid)
-                        ,team=Team.objects.get(team=team_uuid)
+                        ,team=Team.objects.get(uuid=team_uuid)
                         ,statistic=StatisticType.objects.get(opta_statistic_type_name=stat_type)
                         ,FT_value=FT_value
                         ,FH_value=FH_value
