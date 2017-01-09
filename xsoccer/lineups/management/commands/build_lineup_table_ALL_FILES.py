@@ -19,15 +19,6 @@ def is_tag_and_type(xml_obj, tag, type):
     """Return true if the XML object is of the right Tag and Type"""
     return xml_obj.tag == tag and xml_utils.get_attrib(xml_obj,"Type") == type
 
-# def is_new_lineup(query_lineup, list_from_DB):
-#     """Return true if the Lineup is not in the DB"""
-#     for l in list_from_DB:
-#         #don't need to check team, as player should only appear once
-#         if (l.game == query_lineup.game) and (l.player == query_lineup.player):
-#             return False
-
-#     return True
-
 class Command(BaseCommand):
     """
     Sample usage:

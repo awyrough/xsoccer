@@ -52,8 +52,8 @@ class Player(models.Model):
 
     def __str__(self):
         if self.known_name:
-            return "%s (uID = %s)" % (self.known_name, self.uuid)
+            return "%s (%s)" % (self.known_name, self.uuid)
         else:
-            return "%s %s (uID = %s)" % (self.first_name, 
+            return "%s %s (%s)" % (self.first_name, 
                                              self.last_name, 
                                              self.uuid)

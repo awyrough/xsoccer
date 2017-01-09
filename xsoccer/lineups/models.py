@@ -53,12 +53,12 @@ class Lineup(models.Model):
 
     def __str__(self):
     	if self.is_captain:
-    		return "%s [C] (%s) playing as a %s in a %s" % (self.player
+    		return "%s [C] -- %s (No. %s) in a %s" % (self.player
     							,self.player_position
     							,self.player_formation_number
     							,self.team_formation)
     	else:
-    		return "%s (%s) playing as a %s in a %s" % (self.player
+    		return "%s -- %s (No. %s) in a %s" % (self.player
     							,self.player_position
     							,self.player_formation_number
     							,self.team_formation)

@@ -19,8 +19,8 @@ class Game(models.Model):
 	second_half_time = models.IntegerField("2nd Half Length (mins)")
 	
 	def __str__(self):
-		return "%s at %s on %s" % (
-			self.away_team, self.home_team, self.date)
+		return "%s at %s on %s (%s)" % (
+			self.away_team, self.home_team, self.date, self.uuid)
 		# return "%s at %s on %s (W = %s)" % (
 		# 	self.away_team, self.home_team, self.date, self.winner)
 
