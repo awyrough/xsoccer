@@ -53,15 +53,19 @@ class Lineup(models.Model):
 
     def __str__(self):
     	if self.is_captain:
-    		return "%s [C] -- %s (No. %s) in a %s" % (self.player
+    		return "%s [C] - %s (Pos.%s) in a %s for %s in %s" % (self.player
     							,self.player_position
     							,self.player_formation_number
-    							,self.team_formation)
+    							,self.team_formation
+                                ,self.team
+                                ,self.game)
     	else:
-    		return "%s -- %s (No. %s) in a %s" % (self.player
+    		return "%s - %s (Pos.%s) in a %s for %s in  %s" % (self.player
     							,self.player_position
     							,self.player_formation_number
-    							,self.team_formation)
+    							,self.team_formation
+                                ,self.team
+                                ,self.game)
 
     class Meta:
         unique_together = (("game", "player"),)
