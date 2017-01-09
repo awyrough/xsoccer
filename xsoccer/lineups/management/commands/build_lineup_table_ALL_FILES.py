@@ -7,6 +7,7 @@ import time
 from teams.models import Team
 from games.models import Game
 from players.models import Player
+from lineups.models import Lineup
 
 from django.core.management.base import BaseCommand
 
@@ -18,14 +19,14 @@ def is_tag_and_type(xml_obj, tag, type):
     """Return true if the XML object is of the right Tag and Type"""
     return xml_obj.tag == tag and xml_utils.get_attrib(xml_obj,"Type") == type
 
-def is_new_lineup(query_lineup, list_from_DB):
-    """Return true if the Lineup is not in the DB"""
-    for l in list_from_DB:
-        #don't need to check team, as player should only appear once
-        if (l.game == query_lineup.game) and (l.player == query_lineup.player):
-            return False
+# def is_new_lineup(query_lineup, list_from_DB):
+#     """Return true if the Lineup is not in the DB"""
+#     for l in list_from_DB:
+#         #don't need to check team, as player should only appear once
+#         if (l.game == query_lineup.game) and (l.player == query_lineup.player):
+#             return False
 
-    return True
+#     return True
 
 class Command(BaseCommand):
     """
@@ -74,6 +75,7 @@ class Command(BaseCommand):
                 file_start = time.time()
 
                 file_count += 1
+                file_saved_count = 0
                 xml_file = os.path.join(data_filepath, f)
 
                 new_lineups = []
@@ -100,16 +102,16 @@ class Command(BaseCommand):
 
                 #Find <TeamData>
                 for team_data in xml_utils.get_children(MatchData):
-                    if is_tag(team,"TeamData") == False:
+                    if is_tag(team_data,"TeamData") == False:
                         continue #skip if it's not an actual <TeamData> team
                     team_uuid = xml_utils.get_attrib(team_data, "TeamRef")
                     db_team = Team.objects.get(uuid=team_uuid)
 
                     #Comb through <TeamData> and only pull the "formation_used" team Stat
-                    team_formation = xml_utils.get_tag_and_type(team, "Stat", "formation_used").text
+                    team_formation = xml_utils.get_tag_and_type(team_data, "Stat", "formation_used").text
 
                     #Find the XML object <PlayerLinerUp>
-                    xml_PlayerLineUp = xml_utils.get_tag(child, "PlayerLineUp")
+                    xml_PlayerLineUp = xml_utils.get_tag(team_data, "PlayerLineUp")
 
                     #Iterate over players on a team
                     for xml_MatchPlayer in xml_utils.get_children(xml_PlayerLineUp):
@@ -150,14 +152,13 @@ class Command(BaseCommand):
 
                 # get all existing objects, just want for the game/player; 
                 # this is admittedly slow for game/players where the data is already populated; shouldn't be too bad though     
-                existing_lineups = Lineup.objects.filter(game=game)
+                existing_lineups = Lineup.objects.filter(game=db_game)
                 existing_players = [str(i.player.uuid) for i in existing_lineups]
 
                 # log out for audit and save if not dry run and it is a new team
                 for lineup in new_lineups:
                     if is_dry_run == True and lineup.player.uuid not in existing_players:
                         potential_save_count += 1
-                        print lineup
                     elif is_dry_run == False and lineup.player.uuid not in existing_players:
                         lineup.save()
                         saved_count += 1
