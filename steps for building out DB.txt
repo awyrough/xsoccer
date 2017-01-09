@@ -73,3 +73,8 @@ python manage.py build_teamstatistic_table_ALL_FILES \
 #should load in 1,153,759 stats from all F9 files
 python manage.py build_playerstatistic_table_ALL_FILES \
         --data_filepath=data/f9/
+
+#build lineups
+#should load 25,452 lineups from all F9 files
+python manage.py build_lineup_table_ALL_FILES \
+        --data_filepath=data/f9/
