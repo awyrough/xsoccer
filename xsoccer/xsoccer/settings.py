@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'teamstatistics',
     'playerstatistics',
     'lineups',
+    'eventstatistics',
 ]
 
 MIDDLEWARE = [
