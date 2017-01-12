@@ -42,6 +42,9 @@ class EventStatistic(models.Model):
     # camera) is 0 and the left hand touch line (furthest away) is 100. 
     y = models.FloatField(null=False)
 
+    #nkeeping in Opta time zone
+    timestamp = models.DateTimeField("Date and Time of Event", null=True)
+
     def __str__(self):
     	return "%s'%s\" - event type #%s" % (self.minute, self.second, self.type_id)
 
