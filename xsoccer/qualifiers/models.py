@@ -8,14 +8,13 @@ class Qualifier(models.Model):
     Opta F24 event qualifiers. 
     """
 
-    event = models.ForeignKey('events.Event', on_delete=models.CASCADE, related_name="event_for_qualifier")
+    event = models.ForeignKey('eventstatistics.EventStatistic', on_delete=models.CASCADE, related_name="event_for_qualifier")
     
     uuid = models.BigIntegerField(unique=True, null=False)
 
     qualifier_id = models.IntegerField(null=False)
-    #todo(AJ): understand the range of values of qualifier IDs, by parsing all data / reading documentation
 
-    value = models.CharField("Value", default = None, null=True)
+    value = models.CharField("Value", default = None, null=True, max_length=500)
 
     def __str__(self):
     	if value:
