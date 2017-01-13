@@ -42,8 +42,8 @@ class EventStatistic(models.Model):
     # camera) is 0 and the left hand touch line (furthest away) is 100. 
     y = models.FloatField(null=False)
 
-    #nkeeping in Opta time zone
-    timestamp = models.DateTimeField("Date and Time of Event", null=True)
+    #time of event in seconds, relative to scheduled game start
+    relative_seconds = models.FloatField("Relative Seconds of Event", null=False, default=-999999)
 
     def __str__(self):
     	return "%s'%s\" - event type #%s" % (self.minute, self.second, self.type_id)
@@ -52,4 +52,6 @@ class EventStatistic(models.Model):
     	return round(self.minute + float(self.second)/60)
 
     class Meta:
-        unique_together = (("game", "event_id"),)
+    #we technically shouldn't need to add type_id to this, but it fails without it (see event_id="777" in f791390)
+    #not sure if this unique constraint is worth anything...
+        unique_together = (("game", "team", "event_id","type_id"),)

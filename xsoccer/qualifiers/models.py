@@ -8,7 +8,7 @@ class Qualifier(models.Model):
     Opta F24 event qualifiers. 
     """
 
-    event = models.ForeignKey('eventstatistics.EventStatistic', on_delete=models.CASCADE, related_name="event_for_qualifier")
+    event_statistic = models.ForeignKey('eventstatistics.EventStatistic', on_delete=models.CASCADE, related_name="event_for_qualifier", null=False)
     
     uuid = models.BigIntegerField(unique=True, null=False)
 
@@ -17,7 +17,4 @@ class Qualifier(models.Model):
     value = models.CharField("Value", default = None, null=True, max_length=500)
 
     def __str__(self):
-    	if value:
-    		return "Q (%s) = ID #%s w/ value = (%s)" % (self.uuid, self.qualifier_id, self.value)
-    	else:
-    		return  "Q (%s) = ID #%s" % (self.uuid, self.qualifier_id)
+    	return  "Q (%s) = ID #%s" % (self.uuid, self.qualifier_id)
