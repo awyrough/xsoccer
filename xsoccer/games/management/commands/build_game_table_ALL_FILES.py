@@ -68,12 +68,12 @@ class Command(BaseCommand):
 
                 # Iterate over the children within <SoccerFeed>
                 for xml_SoccerDocument in xml_utils.get_children(xml_data_root):
-                    if is_tag(xml_S, "SoccerDocument") == False:
+                    if is_tag(xml_SoccerDocument, "SoccerDocument") == False:
                         continue #skip if not the relevant <SoccerDocument> child
                     
                     #Evaluate if the game has two components; if so, ignore the repeat
-                    xml_MatchData = xml_utils.get_tag(xml_S, "MatchData")
-                    xml_MatchInfo = xml_utils.get_tag(xml_, "MatchInfo")
+                    xml_MatchData = xml_utils.get_tag(xml_SoccerDocument, "MatchData")
+                    xml_MatchInfo = xml_utils.get_tag(xml_SoccerDocument, "MatchInfo")
                     match_type = xml_utils.get_attrib(xml_MatchInfo,"MatchType")
                     if count_matches == 2 and match_type == "1st Leg":
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
