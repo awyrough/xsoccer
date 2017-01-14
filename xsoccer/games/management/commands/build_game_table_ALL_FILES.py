@@ -73,14 +73,16 @@ class Command(BaseCommand):
                     
                     #Evaluate if the game has two components; if so, ignore the repeat
                     xml_MatchData = xml_utils.get_tag(xml_SoccerDocument, "MatchData")
-                    xml_MatchInfo = xml_utils.get_tag(xml_SoccerDocument, "MatchInfo")
-                    match_type = xml_utils.get_attrib(xml_MatchInfo,"MatchType")
+                    xml_MatchInfo = xml_utils.get_tag(xml_MatchData, "MatchInfo")
+                    match_type = xml_utils.get_attrib(xml_MatchInfo, "MatchType")
+
+
                     if count_matches == 2 and match_type == "1st Leg":
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
                     uuid = xml_utils.get_attrib(xml_SoccerDocument, "uID")
                     # Iterate over the children within <SoccerDocument>
-                    for item in xml_utils.get_children(xml_S):
+                    for item in xml_utils.get_children(xml_SoccerDocument):
                         
                         # Work with the <MatchData> object
                         if is_tag(item, "MatchData"):
