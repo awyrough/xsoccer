@@ -75,24 +75,24 @@ class Command(BaseCommand):
                 xml_data_root = xml_utils.get_root_from_file(xml_file)
 
                 #Find <SoccerDocument>
-                SoccerDocument = xml_utils.get_tag(xml_data_root, "SoccerDocument")
+                xml_SoccerDocument = xml_utils.get_tag(xml_data_root, "SoccerDocument")
                 
                 #Evaluate if the game has two SoccerDocument components; if so, ignore the repeat
                 if xml_utils.get_child_count(xml_data_root, "SoccerDocument") == 2:
-                    MatchData = xml_utils.get_tag(SoccerDocument, "MatchData")
-                    MatchInfo = xml_utils.get_tag(MatchData, "MatchInfo")
-                    match_type = xml_utils.get_attrib(MatchInfo,"MatchType")
+                    xml_MatchData = xml_utils.get_tag(xml_SoccerDocument, "MatchData")
+                    xml_MatchInfo = xml_utils.get_tag(xml_MatchData, "MatchInfo")
+                    match_type = xml_utils.get_attrib(xml_MatchInfo,"MatchType")
                     if match_type == "1st Leg":
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
-                game_uuid = xml_utils.get_attrib(SoccerDocument, "uID")
+                game_uuid = xml_utils.get_attrib(xml_SoccerDocument, "uID")
                 db_game = Game.objects.get(uuid=game_uuid)
 
                 #Find <MatchData>
-                MatchData = xml_utils.get_tag(SoccerDocument, "MatchData")
+                xml_MatchData = xml_utils.get_tag(xml_SoccerDocument, "MatchData")
 
                 #Find <TeamData>
-                for team_data in xml_utils.get_children(MatchData):
+                for team_data in xml_utils.get_children(xml_MatchData):
                     if is_tag(team_data,"TeamData") == False:
                         continue #skip if it's not an actual <TeamData> team
                     team_uuid = xml_utils.get_attrib(team_data, "TeamRef")

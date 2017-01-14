@@ -62,25 +62,25 @@ class Command(BaseCommand):
                 xml_data_root = xml_utils.get_root_from_file(xml_file)
                 
                 count_matches = 0
-                for child in xml_utils.get_children(xml_data_root):
-                    if is_tag(child, "SoccerDocument"):
+                for xml_SoccerDocument in xml_utils.get_children(xml_data_root):
+                    if is_tag(xml_SoccerDocument, "SoccerDocument"):
                         count_matches += 1
 
                 # Iterate over the children within <SoccerFeed>
-                for child in xml_utils.get_children(xml_data_root):
-                    if is_tag(child, "SoccerDocument") == False:
+                for xml_SoccerDocument in xml_utils.get_children(xml_data_root):
+                    if is_tag(xml_S, "SoccerDocument") == False:
                         continue #skip if not the relevant <SoccerDocument> child
                     
                     #Evaluate if the game has two components; if so, ignore the repeat
-                    MatchData = xml_utils.get_tag(child, "MatchData")
-                    MatchInfo = xml_utils.get_tag(MatchData, "MatchInfo")
-                    match_type = xml_utils.get_attrib(MatchInfo,"MatchType")
+                    xml_MatchData = xml_utils.get_tag(xml_S, "MatchData")
+                    xml_MatchInfo = xml_utils.get_tag(xml_, "MatchInfo")
+                    match_type = xml_utils.get_attrib(xml_MatchInfo,"MatchType")
                     if count_matches == 2 and match_type == "1st Leg":
                         continue #skip the first leg if two legs in file (aka file is for 2nd leg)                        
 
-                    uuid = xml_utils.get_attrib(child, "uID")
+                    uuid = xml_utils.get_attrib(xml_SoccerDocument, "uID")
                     # Iterate over the children within <SoccerDocument>
-                    for item in xml_utils.get_children(child):
+                    for item in xml_utils.get_children(xml_S):
                         
                         # Work with the <MatchData> object
                         if is_tag(item, "MatchData"):
