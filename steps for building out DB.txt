@@ -74,7 +74,15 @@ python manage.py build_teamstatistic_table_ALL_FILES \
 python manage.py build_playerstatistic_table_ALL_FILES \
         --data_filepath=data/f9/
 
+
 #build lineups
 #should load 25,452 lineups from all F9 files
 python manage.py build_lineup_table_ALL_FILES \
         --data_filepath=data/f9/
+
+#build EventStatistics and Qualifiers
+#should load 1,172,638 event statistics
+#should load 5,201,590 qualifier statistics
+python manage.py build_eventstatistic_table_ALL_FILES \
+        --data_filepath=data/f24
+
