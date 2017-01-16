@@ -17,7 +17,9 @@ class Game(models.Model):
 	winner = models.ForeignKey('teams.Team', on_delete=models.SET_NULL, null=True, blank=True, related_name="game_winner")
 	first_half_time = models.IntegerField("1st Half Length (mins)")
 	second_half_time = models.IntegerField("2nd Half Length (mins)")
-	
+	home_team_score = models.IntegerField("Final Score of Home Team", null=True)
+	away_team_score = models.IntegerField("Final Score of Away Team", null=True)
+
 	def __str__(self):
 		return "%s at %s on %s (%s)" % (
 			self.away_team, self.home_team, self.date, self.uuid)
@@ -36,6 +38,22 @@ class Game(models.Model):
 
 	def atmosphere(self):
 		return (float(self.attendance) / float(self.venue.capacity)) * 100
+
+	def team_score(team_uuid):
+		if team_uuid == home_team.uuid:
+			return home_team_score
+		elif team_uuid == away_team.uuid:
+			return away_team_score
+		else:
+			return "Your logic is wrong"
+
+	#give us the ability to manually update the DB instances at any point! (added to Game model to update scores)
+	def update(self, **kwargs):
+			if self._state.adding:
+				raise self.DoesNotExist
+			for field, value in kwargs.items():
+				setattr(self, field, value)
+			self.save(update_fields=kwargs.keys())
 
 	class Meta:
 		unique_together = ["home_team", "away_team", "date"]

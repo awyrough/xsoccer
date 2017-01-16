@@ -86,3 +86,8 @@ python manage.py build_lineup_table_ALL_FILES \
 python manage.py build_eventstatistic_table_ALL_FILES \
         --data_filepath=data/f24
 
+
+#Load in game score data retroactively
+#should load 1418 values over 709 games
+python manage.py populate_game_scores_ALL_FILES --data_filepath=data/f9/
+
