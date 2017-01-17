@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'lineups',
     'eventstatistics',
     'qualifiers',
+    'analysis',
 ]
 
 MIDDLEWARE = [
