@@ -19,6 +19,7 @@ ua.team_statistic_values(t,t_games[0],["passes_left"])
 ua.team_statistic_values(t,t_games[0])
 """
 import time
+import datetime 
 
 from eventstatistics.models import EventStatistic
 from games.models import Game
@@ -39,12 +40,13 @@ def player(player_uuid):
 	"""Return a Player Django instance"""
 	return Player.objects.get(uuid=player_uuid)
 
-def player_list_games(player):
-	"""Return a list of Game instances for a Player input"""
+def player_list_games(player, start_date, end_date):
+	"""Return a list of Game instances for a Player input, between a date range"""
 	games = []
 
 	for l in Lineup.objects.filter(player=player):
-		games.append(l.game)
+		if l.game.date >= start_date and l.game.date <= end_date:
+			games.append(l.game)
 
 	return games
 
@@ -87,11 +89,12 @@ def team(team_uuid):
 	"""Return a Team Django instance"""
 	return Team.objects.get(uuid=team_uuid)
 
-def team_list_games(team):
-	"""Return a list of Game instances for a Team input"""
+def team_list_games(team, start_date, end_date):
+	"""Return a list of Game instances for a Team input, between two date ranges"""
 	games = []
 
-	for g in Game.objects.filter(home_team=team) | Game.objects.filter(away_team=team):
+	for g in Game.objects.filter(home_team=team, date__range=[start_date,end_date]) \
+				| Game.objects.filter(away_team=team, date__range=[start_date,end_date]):
 		games.append(g)
 
 	return games
@@ -137,11 +140,11 @@ def team_wins(team):
 
 	return wins
 
-def team_losses(team):
+def team_losses(team, start_date=datetime.date(1900, 1, 1), end_date=datetime.date(2900, 1, 1)):
 	"""Return a list of Game instances where a Team lost"""
 	losses = []
 
-	games = team_list_games(team)
+	games = team_list_games(team, start_date, end_date)
 
 	for g in games:
 		if g.winner == None:
@@ -153,11 +156,11 @@ def team_losses(team):
 
 	return losses
 
-def team_ties(team):
+def team_ties(team, start_date=datetime.date(1900, 1, 1), end_date=datetime.date(2900, 1, 1)):
 	"""Return a list of Game instances where a Team tied"""
 	ties = []
 
-	games = team_list_games(team)
+	games = team_list_games(team, start_date, end_date)
 
 	for g in games:
 		if g.winner == None:
@@ -165,14 +168,25 @@ def team_ties(team):
 
 	return ties
 
-def team_scoreless_ties(team):
+def team_scoreless_ties(team, start_date=datetime.date(1900, 1, 1), end_date=datetime.date(2900, 1, 1)):
 	"""Return a list of Game instances where a Team tied and nobody scored"""
 	scoreless_ties = []
 
-	games = team_list_games(team)
+	games = team_list_games(team, start_date, end_date)
 
 	for g in games:
 		if g.winner == None and g.home_team_score == 0:
 			scoreless_ties.append(g)
 
 	return scoreless_ties
+
+def team_game_result(team, game):
+	"""Return the final result of the game as it relates to the team"""
+	if game.winner == team:
+		return "Win"
+	elif game.winner and game.winner != team:
+		return "Lose"
+	elif game.home_team_score > 0:
+		return "Tie"
+	else:
+		return "Scoreless Tie"

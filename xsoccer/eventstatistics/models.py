@@ -55,3 +55,4 @@ class EventStatistic(models.Model):
     #we technically shouldn't need to add type_id to this, but it fails without it (see event_id="777" in f791390)
     #not sure if this unique constraint is worth anything...
         unique_together = (("game", "team", "event_id","type_id"),)
+        ordering = ["period_id","minute", "second", "relative_seconds"]

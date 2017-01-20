@@ -1,3 +1,6 @@
+"""
+Sample Run Script: python manage.py analysis1 --team_uuid="t1326" --print_to_csv
+"""
 import datetime
 import csv
 import os
@@ -15,6 +18,7 @@ from teams.models import Team
 from teamstatistics.models import TeamStatistic
 from venues.models import Venue
 
+import utils.analysis as ua
 
 class Command(BaseCommand):
 	help = 'Pull the statistics of a team across a time-range; classify by outcome'
@@ -35,14 +39,14 @@ class Command(BaseCommand):
             help="save file?",
             )
 		parser.add_argument(
-			"--startdate",
-            dest="startdate",
+			"--start_date",
+            dest="start_date",
             default='1900-01-01',
             help="Example format: 1900-01-31",
             )
 		parser.add_argument(
-			"--enddate",
-            dest="enddate",
+			"--end_date",
+            dest="end_date",
             default='2900-01-01',
             help="Example format: 1900-01-31",
             )
@@ -52,11 +56,11 @@ class Command(BaseCommand):
 			raise Exception("Opta team ID is needed")
 		is_print_to_csv = options["print_to_csv"]
 		arg_team_uuid = str(options["team_uuid"])
-		arg_startdate = str(options["startdate"])
-		arg_enddate = str(options["enddate"])
+		arg_start_date = str(options["start_date"])
+		arg_end_date = str(options["end_date"])
 		
-		arg_startdate = datetime.datetime.strptime(arg_startdate, "%Y-%m-%d")
-		arg_enddate = datetime.datetime.strptime(arg_enddate, "%Y-%m-%d")
+		arg_start_date = datetime.datetime.strptime(arg_start_date, "%Y-%m-%d")
+		arg_end_date = datetime.datetime.strptime(arg_end_date, "%Y-%m-%d")
 
 		#load team
 		db_team = Team.objects.get(uuid=arg_team_uuid)
@@ -341,20 +345,39 @@ class Command(BaseCommand):
 					(
 						len(all_stats_to_consider)
 						,db_team
-						,arg_startdate
-						,arg_enddate
+						,arg_start_date
+						,arg_end_date
 					)
- 
+
+		#pull list of games tied to the team
+		team_games = ua.team_list_games(db_team, arg_start_date, arg_end_date)
+
+		#for each game, pull the team stats into a dictionary tied to that game.
+		results = {}
+
+		for game in team_games:
+			results[game] = ua.team_statistic_values(db_team, game, all_stats_to_consider)
+
+
 		if is_print_to_csv:	
 			os.chdir("/Users/Swoboda/Desktop/")
 
-			output_filename = "twosamp_results__" + str(time.strftime('%Y_%m_%d')) + "_" + arg_filename + ".csv"
+			#create header row
+			header = ["result"] + all_stats_to_consider
+
+			output_filename = "analysis1_" + str(time.strftime('%Y_%m_%d')) + ".csv"
 			output = open(output_filename, "a")
 			writer = csv.writer(output, lineterminator="\n")
 
 			writer.writerow(header)
 		
-			for r in results:
+			for key in results:
+				r = []
+				r += [str(ua.team_game_result(db_team, key))]
+				stats = results[key]
+				for item in all_stats_to_consider:
+					r += [str(stats[item])]
+
 				writer.writerow(r)
 
 			output.close()	
