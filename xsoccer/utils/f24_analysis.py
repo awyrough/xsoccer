@@ -120,9 +120,31 @@ def create_pass_chains(game, team):
 
 	#print pass_chains
 
-	for item in pass_chains:
-		print ""
-		for i in item:
-			print i 
+	# for item in pass_chains:
+	# 	print ""
+	# 	for i in item:
+	# 		print i 
+
+	return pass_chains
 
 
+def pass_chain_diagnostics(pass_chain):
+	"""Method for handling a chain of passes and outputting descriptive information"""
+	pass_chain_elements = []
+	player_sequence = []
+
+	print ""
+
+	for item in pass_chain:
+		print item
+		item_elements = pass_elements(item)
+		pass_chain_elements.append(item_elements)
+		player_sequence.append(item_elements[0])
+
+	print "  " + str(player_sequence)
+	num_passes = len(pass_chain)
+	print "  " + str(num_passes) 
+	net_x_traveled = pass_chain_elements[num_passes-1][6] - pass_chain_elements[0][4]
+	net_y_traveled = pass_chain_elements[num_passes-1][7] - pass_chain_elements[0][5]
+	print "  " + str(net_x_traveled)
+	print "  " + str(net_y_traveled)

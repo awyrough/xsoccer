@@ -75,8 +75,10 @@ class Command(BaseCommand):
 		#get sample game
 		sample_game = team_games[1]
 
-		uf24.create_pass_chains(sample_game, db_team)
+		pass_chains = uf24.create_pass_chains(sample_game, db_team)
 
+		for chain in pass_chains:
+			uf24.pass_chain_diagnostics(chain)
 
 		# if is_print_to_csv:	
 		# 	os.chdir("/Users/Swoboda/Desktop/")
