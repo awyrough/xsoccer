@@ -20,6 +20,7 @@ ua.team_statistic_values(t,t_games[0])
 """
 import time
 import datetime 
+import math
 
 from eventstatistics.models import EventStatistic
 from qualifiers.models import Qualifier
@@ -130,26 +131,67 @@ def create_pass_chains(game, team):
 
 def pass_chain_diagnostics(pass_chain):
 	"""Method for handling a chain of passes and outputting descriptive information"""
+	#list of pass elements for the whole chain
 	pass_chain_elements = []
+	#list of player instances
 	player_sequence = []
 
-	print ""
+	#list of tuples for keeping track of 4x tuple coordinate information
+	coordinates = []
 
 	for item in pass_chain:
 		print item
+		#get pass_chain item's pass elements
 		item_elements = pass_elements(item)
+		#save those in a list
 		pass_chain_elements.append(item_elements)
+		#record the players involved
 		player_sequence.append(item_elements[0])
+		#record the coordinate movements
+		x1y1x2y2 = (item_elements[4], item_elements[5], item_elements[6], item_elements[7])
+		coordinates.append(x1y1x2y2)
 
-	print "  " + str(player_sequence)
 	num_passes = len(pass_chain)
-	print "  " + str(num_passes) 
-	net_x_traveled = pass_chain_elements[num_passes-1][6] - pass_chain_elements[0][4]
-	net_y_traveled = pass_chain_elements[num_passes-1][7] - pass_chain_elements[0][5]
-	print "  " + str(net_x_traveled)
-	print "  " + str(net_y_traveled)
+	end_x = pass_chain_elements[num_passes-1][6] 
+	start_x = pass_chain_elements[0][4]
+	end_y = pass_chain_elements[num_passes-1][7]
+	start_y pass_chain_elements[0][5]
 
-def pull_x1y1x2y2_from_elements(list_pass_elements):
-	"""Method to iterate through and pull the start / stop x/y coords for pass sequences"""
-	#list for keeping track of 4x tuple coordinate information
-	x1y1x2y2 = []
+	#4x tuple for total x/y coordinates traveled
+	net_coordinates = (start_x, start_y, end_x, end_y)
+
+	# print ""
+	# print "  " + str(player_sequence)
+	# print "  " + str(num_passes) 
+	# print "  " + str(net_x_traveled)
+	# print "  " + str(net_y_traveled)
+	# for item in coordinates:
+	# 	print item
+
+	return pass_chain_elements, player_sequence, net_coordinates, coordinates
+
+def distance(coordinate_tuple):
+	"""Intake a coordinate tuple, return the distance between points"""
+	x1 = coordinate_tuple[0]
+	y1 = coordinate_tuple[1]
+	x2 = coordinate_tuple[2]
+	y2 = coordinate_tuple[3]
+
+	dist = math.sqrt((x2-x1)**2 + (y2-y1)**2)
+
+	return dist
+
+def net_x_vector(coordinate_tuple):
+	"""Intake a coordinate tuple, return the net x vector value"""
+	x1 = coordinate_tuple[0]
+	x2 = coordinate_tuple[2]
+
+	return x2-x1
+
+def net_y_vector(coordinate_tuple):
+	"""Intake a coordinate tuple, return the net y vector value"""
+	y1 = coordinate_tuple[1]
+	y2 = coordinate_tuple[3]
+
+	return y2-y1
+
