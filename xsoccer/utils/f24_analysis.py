@@ -148,3 +148,8 @@ def pass_chain_diagnostics(pass_chain):
 	net_y_traveled = pass_chain_elements[num_passes-1][7] - pass_chain_elements[0][5]
 	print "  " + str(net_x_traveled)
 	print "  " + str(net_y_traveled)
+
+def pull_x1y1x2y2_from_elements(list_pass_elements):
+	"""Method to iterate through and pull the start / stop x/y coords for pass sequences"""
+	#list for keeping track of 4x tuple coordinate information
+	x1y1x2y2 = []
