@@ -21,6 +21,8 @@ ua.team_statistic_values(t,t_games[0])
 import time
 import datetime 
 import math
+import os
+import csv
 
 from eventstatistics.models import EventStatistic
 from qualifiers.models import Qualifier
@@ -119,13 +121,6 @@ def create_pass_chains(game, team):
 	if len(chain):
 		pass_chains.append(chain)
 
-	#print pass_chains
-
-	# for item in pass_chains:
-	# 	print ""
-	# 	for i in item:
-	# 		print i 
-
 	return pass_chains
 
 
@@ -165,6 +160,8 @@ def seconds_to_game_time(seconds,option):
 
 def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 	"""Method for handling a chain of passes and outputting descriptive information"""
+
+	"""if ignore_singles=True, this means we want to ignore single-pass pass chains"""
 	num_passes = len(pass_chain)
 
 	if ignore_singles and num_passes == 1:
@@ -216,6 +213,33 @@ def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 	return [pass_chain_elements,player_sequence,net_coordinates,coordinates,distance(net_coordinates),x_distance(net_coordinates),total_distance,num_passes,chain_start_seconds,elapsed_time]
 
 
+def game_diagnostics(game, team, ignore_singles=False):
+	"""Input a game, team and note if you want to ignore single-passes..
+	
+	will pull all pass chain diagnostics in that game and return a list of lists"""
+
+	#get passing chains
+	pass_chains = create_pass_chains(game, team)
+
+	#pull statistics on passing chains
+	game_diagnostics = []
+	for chain in pass_chains:
+		pass_chain_diagnostic_results = pass_chain_diagnostics(chain, ignore_singles=True)
+		#0 pass_chain_elements
+		#1 player_sequence
+		#2 net_coordinates
+		#3 coordinates
+		#4 distance(net_coordinates)
+		#5 x_distance(net_coordinates)
+		#6 total_distance
+		#7 num_passes
+		#8 chain_start_seconds
+		#9 elapsed_time
+		if pass_chain_diagnostic_results:
+			game_diagnostics.append(pass_chain_diagnostic_results)
+
+	return game_diagnostics
+
 def tempo_from_pass_diagnostics(diagnostic):
 	"""Method for handling a chain_pass diagnostic and outputting it's tempo
 
@@ -262,3 +286,60 @@ def vertical_velocity_from_pass_diagnostics(diagnostic):
 		return float(vertical_distance) / elapsed_time
 	else:
 		return None
+
+def to_csv_single_gameteam_stats(game_diagnostics, team, game):
+	"""
+	To be run when we want to save to csv a single team's pass statistics over the course of a game
+	"""
+	os.chdir("/Users/Swoboda/Desktop/analysis2/")
+	team_uuid = team.uuid
+	game_uuid = game.uuid
+	game_date = game.date
+
+	output_filename = "analysis2" + "_" + game_uuid + "_" + team_uuid + ".csv"
+
+	#create header row
+	header = []
+	header += ["Date"]
+	header += ["Game"]
+	header += ["Team"]
+	header += ["Game_Minutes"]
+	header += ["Pass_Count"]
+	header += ["Elapsed_Time"]
+	header += ["Tempo"]
+	header += ["Total_Velocity"]
+	header += ["Vertical_Velocity"]
+
+	output = open(output_filename, "a")
+	writer = csv.writer(output, lineterminator="\n")
+
+	writer.writerow(header)
+
+	#Diagnostic legend:
+		#0 pass_chain_elements
+		#1 player_sequence
+		#2 net_coordinates
+		#3 coordinates
+		#4 distance(net_coordinates)
+		#5 x_distance(net_coordinates)
+		#6 total_distance
+		#7 num_passes
+		#8 chain_start_seconds
+		#9 elapsed_time
+	for diagnostics in game_diagnostics:
+		r = []
+		r += [game_date]
+		r += [game_uuid]
+		r += [team_uuid]
+		r += [seconds_to_game_time(diagnostics[8],"float")]
+		r += [diagnostics[7]]
+		r += [diagnostics[9]]
+		r += [tempo_from_pass_diagnostics(diagnostics)]
+		r += [total_velocity_from_pass_diagnostics(diagnostics)]
+		r += [vertical_velocity_from_pass_diagnostics(diagnostics)]
+
+		if len(header) != len(r):
+			raise Exception("Rows you're about to print are not same dimension as header. Check this!")
+		writer.writerow(r)
+
+	output.close()
