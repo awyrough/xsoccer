@@ -129,47 +129,6 @@ def create_pass_chains(game, team):
 	return pass_chains
 
 
-def pass_chain_diagnostics(pass_chain):
-	"""Method for handling a chain of passes and outputting descriptive information"""
-	#list of pass elements for the whole chain
-	pass_chain_elements = []
-	#list of player instances
-	player_sequence = []
-
-	#list of tuples for keeping track of 4x tuple coordinate information
-	coordinates = []
-
-	for item in pass_chain:
-		print item
-		#get pass_chain item's pass elements
-		item_elements = pass_elements(item)
-		#save those in a list
-		pass_chain_elements.append(item_elements)
-		#record the players involved
-		player_sequence.append(item_elements[0])
-		#record the coordinate movements
-		x1y1x2y2 = (item_elements[4], item_elements[5], item_elements[6], item_elements[7])
-		coordinates.append(x1y1x2y2)
-
-	num_passes = len(pass_chain)
-	end_x = pass_chain_elements[num_passes-1][6] 
-	start_x = pass_chain_elements[0][4]
-	end_y = pass_chain_elements[num_passes-1][7]
-	start_y pass_chain_elements[0][5]
-
-	#4x tuple for total x/y coordinates traveled
-	net_coordinates = (start_x, start_y, end_x, end_y)
-
-	# print ""
-	# print "  " + str(player_sequence)
-	# print "  " + str(num_passes) 
-	# print "  " + str(net_x_traveled)
-	# print "  " + str(net_y_traveled)
-	# for item in coordinates:
-	# 	print item
-
-	return pass_chain_elements, player_sequence, net_coordinates, coordinates
-
 def distance(coordinate_tuple):
 	"""Intake a coordinate tuple, return the distance between points"""
 	x1 = coordinate_tuple[0]
@@ -181,17 +140,125 @@ def distance(coordinate_tuple):
 
 	return dist
 
-def net_x_vector(coordinate_tuple):
+def x_distance(coordinate_tuple):
 	"""Intake a coordinate tuple, return the net x vector value"""
 	x1 = coordinate_tuple[0]
 	x2 = coordinate_tuple[2]
 
 	return x2-x1
 
-def net_y_vector(coordinate_tuple):
+def y_distance(coordinate_tuple):
 	"""Intake a coordinate tuple, return the net y vector value"""
 	y1 = coordinate_tuple[1]
 	y2 = coordinate_tuple[3]
 
 	return y2-y1
 
+def seconds_to_game_time(seconds,option):
+	"""Intake aggregate seconds and convert to game minute / second"""
+	if option == "string":
+		return '{}\'{}\"'.format(*divmod(seconds, 60))
+	elif option == "float":
+		return float(seconds)/60
+	else:
+		raise Exception("%s is not an appropriate conversion option" % (option))
+
+def pass_chain_diagnostics(pass_chain, ignore_singles=False):
+	"""Method for handling a chain of passes and outputting descriptive information"""
+	num_passes = len(pass_chain)
+
+	if ignore_singles and num_passes == 1:
+		return None
+	#list of pass elements for the whole chain
+	pass_chain_elements = []
+	#list of player instances
+	player_sequence = []
+	#list of tuples for keeping track of 4x tuple coordinate information
+	coordinates = []
+	#total distance of ball movement
+	total_distance = 0.0
+
+	for item in pass_chain:
+		#get pass_chain item's pass elements
+		item_elements = pass_elements(item)
+		#save those in a list
+		pass_chain_elements.append(item_elements)
+		#record the players involved
+		player_sequence.append(item_elements[0])
+		#record the coordinate movements
+		x1y1x2y2 = (item_elements[4], item_elements[5], item_elements[6], item_elements[7])
+		total_distance += distance(x1y1x2y2)
+		coordinates.append(x1y1x2y2)
+
+	start_xy = (pass_chain_elements[0][4], pass_chain_elements[0][5])
+	end_xy = (pass_chain_elements[num_passes-1][6], pass_chain_elements[num_passes-1][7])
+
+	#4x tuple for total x/y coordinates traveled
+	net_coordinates = (start_xy[0], start_xy[1], end_xy[0], end_xy[1])
+
+	#elapsed time in seconds
+	elapsed_time = pass_chain_elements[num_passes-1][3]-pass_chain_elements[0][3]
+
+	#game minute/second of start
+	chain_start_seconds = int(pass_chain_elements[0][1])*60 + int(pass_chain_elements[0][2])
+
+			#0 pass_chain_elements
+			#1 player_sequence
+			#2 net_coordinates
+			#3 coordinates
+			#4 distance(net_coordinates)
+			#5 x_distance(net_coordinates)
+			#6 total_distance
+			#7 num_passes
+			#8 chain_start_seconds
+			#9 elapsed_time
+
+	return [pass_chain_elements,player_sequence,net_coordinates,coordinates,distance(net_coordinates),x_distance(net_coordinates),total_distance,num_passes,chain_start_seconds,elapsed_time]
+
+
+def tempo_from_pass_diagnostics(diagnostic):
+	"""Method for handling a chain_pass diagnostic and outputting it's tempo
+
+	Shouldn't be calculated for pass chains of 1 pass
+
+	tempo = pass count / cumulative time
+	"""
+	pass_count = diagnostic[7]
+	elapsed_time = diagnostic[9]
+
+	if elapsed_time > 0:
+		return float(pass_count) / elapsed_time
+	else:
+		return None
+
+def total_velocity_from_pass_diagnostics(diagnostic):
+	"""Method for handling a chain_pass diagnostic and outputting it's total velocity
+
+	Shouldn't be calculated for pass chains of 1 pass
+
+	total velocity = total distance / cumulative time
+	"""
+	total_distance = diagnostic[6]
+	elapsed_time = diagnostic[9]
+	pass_count = diagnostic[7]
+
+	if pass_count > 1:
+		return float(total_distance) / elapsed_time
+	else:
+		return None
+
+def vertical_velocity_from_pass_diagnostics(diagnostic):
+	"""Method for handling a chain_pass diagnostic and outputting it's vertical velocity
+
+	Shouldn't be calculated for pass chains of 1 pass
+
+	vertical velocity = vertical distance / cumulative time
+	"""
+	vertical_distance = diagnostic[5]
+	elapsed_time = diagnostic[9]
+	pass_count = diagnostic[7]
+
+	if pass_count > 1:
+		return float(vertical_distance) / elapsed_time
+	else:
+		return None

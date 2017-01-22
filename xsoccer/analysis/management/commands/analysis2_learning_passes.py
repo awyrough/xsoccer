@@ -73,12 +73,33 @@ class Command(BaseCommand):
 		team_games = ua.team_list_games(db_team, arg_start_date, arg_end_date)
 
 		#get sample game
-		sample_game = team_games[1]
-
+		sample_game = team_games[0]
+		print sample_game
+		#get passing chains
 		pass_chains = uf24.create_pass_chains(sample_game, db_team)
 
+		#pull statistics on passing chains
+		game_diagnostics = []
 		for chain in pass_chains:
-			uf24.pass_chain_diagnostics(chain)
+			pass_chain_diagnostic_results = uf24.pass_chain_diagnostics(chain, ignore_singles=True)
+			#0 pass_chain_elements
+			#1 player_sequence
+			#2 net_coordinates
+			#3 coordinates
+			#4 distance(net_coordinates)
+			#5 x_distance(net_coordinates)
+			#6 total_distance
+			#7 num_passes
+			#8 chain_start_seconds
+			#9 elapsed_time
+			if pass_chain_diagnostic_results:
+				game_diagnostics.append(pass_chain_diagnostic_results)
+
+		for diagnostics in game_diagnostics:
+			#print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.tempo_from_pass_diagnostics(diagnostics))
+			print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.total_velocity_from_pass_diagnostics(diagnostics))
+			#print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.vertical_velocity_from_pass_diagnostics(diagnostics))
+		
 
 		# if is_print_to_csv:	
 		# 	os.chdir("/Users/Swoboda/Desktop/")
