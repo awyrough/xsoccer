@@ -96,10 +96,12 @@ class Command(BaseCommand):
 				game_diagnostics.append(pass_chain_diagnostic_results)
 
 		for diagnostics in game_diagnostics:
-			#print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.tempo_from_pass_diagnostics(diagnostics))
-			print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.total_velocity_from_pass_diagnostics(diagnostics))
-			#print "%s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float"), uf24.vertical_velocity_from_pass_diagnostics(diagnostics))
-		
+			print "%s, %s, %s, %s, %s, %s" % (uf24.seconds_to_game_time(diagnostics[8],"float") \
+				, diagnostics[7]
+				, diagnostics[9]
+				, uf24.tempo_from_pass_diagnostics(diagnostics)
+				, uf24.total_velocity_from_pass_diagnostics(diagnostics)
+				, uf24.vertical_velocity_from_pass_diagnostics(diagnostics))
 
 		# if is_print_to_csv:	
 		# 	os.chdir("/Users/Swoboda/Desktop/")
