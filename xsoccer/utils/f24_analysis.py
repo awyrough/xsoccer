@@ -218,13 +218,7 @@ def game_diagnostics(game, team, ignore_singles=False):
 	
 	will pull all pass chain diagnostics in that game and return a list of lists"""
 
-	#get passing chains
-	pass_chains = create_pass_chains(game, team)
-
-	#pull statistics on passing chains
-	game_diagnostics = []
-	for chain in pass_chains:
-		pass_chain_diagnostic_results = pass_chain_diagnostics(chain, ignore_singles=True)
+	#diagnostic legend, as an FYI:
 		#0 pass_chain_elements
 		#1 player_sequence
 		#2 net_coordinates
@@ -235,7 +229,18 @@ def game_diagnostics(game, team, ignore_singles=False):
 		#7 num_passes
 		#8 chain_start_seconds
 		#9 elapsed_time
-		if pass_chain_diagnostic_results:
+
+
+	#get passing chains
+	pass_chains = create_pass_chains(game, team)
+
+	#pull statistics on passing chains
+	game_diagnostics = []
+	for chain in pass_chains:
+		pass_chain_diagnostic_results = pass_chain_diagnostics(chain, ignore_singles=True)
+		
+		#ignore sequences that are unrealistically short, as this is a data collection error
+		if pass_chain_diagnostic_results and pass_chain_diagnostic_results[9] >= 0.1:
 			game_diagnostics.append(pass_chain_diagnostic_results)
 
 	return game_diagnostics
