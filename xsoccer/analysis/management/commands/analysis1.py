@@ -1,6 +1,11 @@
 """
+Analysis for creating outputs to input into an R script..
+
+This R script will then create decision trees using the Rpart package
+
 Sample Run Script: python manage.py analysis1 --team_uuid="t1326" --print_to_csv
 """
+
 import datetime
 import csv
 import os
