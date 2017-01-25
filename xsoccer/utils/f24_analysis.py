@@ -97,7 +97,9 @@ def pass_elements(event_stat):
 		elif is_qualifier_id(Q, 213):
 			angle = float(Q.value)
 
-	pass_tuple = (player, minute, second, relative_seconds, x_start, y_start, x_end, y_end, length, angle)
+	player_position = Lineup.objects.get(game=event_stat.game, player=player).player_formation_number
+
+	pass_tuple = (player, minute, second, relative_seconds, x_start, y_start, x_end, y_end, length, angle, player_position)
 
 	return pass_tuple
 
