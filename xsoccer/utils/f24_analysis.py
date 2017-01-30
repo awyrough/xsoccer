@@ -1,23 +1,5 @@
-# functions centered around analysis
+# functions centered around f24 analysis
 
-# Sample commands to run:
-"""
-
-import utils.analysis as ua
-p = ua.player("p164480")
-t = ua.team("t1326")
-
-p_games = ua.player_list_games(p)
-t_games = ua.team_list_games(t)
-
-stats = ua.player_game_stats(p, games[0])
-
-ua.player_statistic_values(p,p_games[0],["passes_left", "accurate_pass", "aerial_won", "aerial_lost", "accurate_back_zone_pass", "accurate_fwd_zone_pass"])
-ua.player_statistic_values(p,p_games[0],["passes_left"])
-
-ua.team_statistic_values(t,t_games[0],["passes_left"])
-ua.team_statistic_values(t,t_games[0])
-"""
 import time
 import datetime 
 import math
