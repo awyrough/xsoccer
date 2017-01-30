@@ -46,7 +46,7 @@ class EventStatistic(models.Model):
     relative_seconds = models.FloatField("Relative Seconds of Event", null=False, default=-999999)
 
     def __str__(self):
-    	return "%s'%s\" - event type #%s" % (self.minute, self.second, self.type_id)
+    	return "%s'%s\" - type_id=%s; %s" % (self.minute, self.second, self.type_id, self.team)
 
     def game_minute(self):
     	return round(self.minute + float(self.second)/60)

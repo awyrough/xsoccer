@@ -431,34 +431,48 @@ def identify_shots(game, team):
 
 	return shots
 
-def is_inside_box(event):
+def is_in_range(value, low_lim, up_lim, limits="Inclusive"):
+	"""Check if a value is bewteen a lower and upper limit"""
+	if limits == "Inclusive":
+		if low_lim <= value <= up_lim:
+			return True
+		else:
+			return False
+	elif limits == "Exclusive":
+		if low_lim < value < up_lim:
+			return True
+		else:
+			return False
+
+def is_inside_box(event_stat):
 	"""Method to determine if an event takes place inside the box"""
 
 	player = event_stat.player
-	x_start = event_stat.x
-	y_start = event_stat.y
+	x = event_stat.x
+	y = event_stat.y
 
-	minute = event_stat.minute
-	second = event_stat.second
-	relative_seconds = event_stat.relative_seconds
+	attacking_box_x = [83, 100]
+	attacking_box_y = [21.1,78.9]
 
-	x_end = None
-	y_end = None
-	length = None
-	angle = None
+	if is_in_range(x, attacking_box_x[0], attacking_box_x[1]):
+		if is_in_range(y, attacking_box_y[0], attacking_box_y[1]):
+			return True
+	return False
 
-	for Q in Qualifier.objects.filter(event_statistic=event_stat):
-		if is_qualifier_id(Q, 140):
-			x_end = float(Q.value)
-		elif is_qualifier_id(Q, 141):
-			y_end = float(Q.value)
-		elif is_qualifier_id(Q, 212):
-			length = float(Q.value)
-		elif is_qualifier_id(Q, 213):
-			angle = float(Q.value)
+def backtrack(game, key_event, mins=1, is_reversed=True):
+	"""Given a game and event, backtrack "mins" through the eventfeed and return everything up to event"""
+	ref_minute = key_event.minute
 
-	player_position = Lineup.objects.get(game=event_stat.game, player=player).player_formation_number
+	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
+	desired_events = []
+	for e in events:
+		if e.uuid == key_event.uuid:
+			#desired_events.append(e) #include this if we want the key_event included at end of list
+			break
+		else:
+			desired_events.append(e)
 
-	pass_tuple = (player, minute, second, relative_seconds, x_start, y_start, x_end, y_end, length, angle, player_position)
-
-	return pass_tuple
+	if is_reversed:
+		desired_events.reverse()
+		
+	return desired_events

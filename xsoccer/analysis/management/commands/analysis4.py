@@ -8,8 +8,8 @@ Objectives:
 Sample Run Script: python manage.py analysis3 --team_uuid="t1326" 
 					--print_to_csv
 
-					python manage.py analysis3 --team_uuid="t1326"  --start_date="2016-07-01"
-					python manage.py analysis3 --team_uuid="t1326"  --start_date="2016-01-01" --end_date="2016-07-01"
+					python manage.py analysis4 --team_uuid="t1326"  --start_date="2016-07-01"
+					python manage.py analysis4 --team_uuid="t1326"  --start_date="2016-01-01" --end_date="2016-07-01"
 """
 import datetime
 import csv
@@ -85,3 +85,7 @@ class Command(BaseCommand):
 			
 			for item in uf24.identify_shots(game, db_team):
 				print item
+				backtracked = uf24.backtrack(game, item)
+				for item in backtracked:
+					print "   " + str(item)
+				print ""
