@@ -46,6 +46,15 @@ def is_type_id(instance, typeID):
 	else:
 		return None
 
+def is_type_id_many(instance, typeIDlist):
+	instance_type = instance.type_id
+
+	for typeID in typeIDlist:
+		if instance_type == typeID:
+			return instance
+
+	return None
+
 def is_qualifier_id(instance, qualifierID):
 	if instance.qualifier_id == qualifierID:
 		return instance
@@ -369,11 +378,8 @@ def to_csv_histogram(histogram_lists,team,title=""):
 	To be run when we want to save to csv a list of frequencies
 	"""
 	os.chdir("/Users/Swoboda/Desktop/analysis3/")
-
 	team_uuid = team.uuid
-
 	output_filename = "analysis3" + "_" + str(team_uuid) + "_" + title + ".csv"
-
 	#create header row
 	header = []
 	header += ["Item"]
@@ -384,17 +390,7 @@ def to_csv_histogram(histogram_lists,team,title=""):
 
 	writer.writerow(header)
 	len_header = len(header)
-	#Diagnostic legend:
-		#0 pass_chain_elements
-		#1 player_sequence
-		#2 net_coordinates
-		#3 coordinates
-		#4 distance(net_coordinates)
-		#5 x_distance(net_coordinates)
-		#6 total_distance
-		#7 num_passes
-		#8 chain_start_seconds
-		#9 elapsed_time
+
 	for h in histogram_lists:
 		r = []
 		r += [h[0]]
@@ -406,3 +402,63 @@ def to_csv_histogram(histogram_lists,team,title=""):
 
 	output.close()
 
+
+"""
+Shot Events  
+
+type_id = 13 <- Miss (off target; wide or over goal)
+
+type_id = 14 <- Post
+
+type_id = 15 <- Attempt Saved
+	qualifier id = 82 <- blocked shot
+
+type_id = 16 <- Goal
+
+type_id = 60 <- Chance missed (..maybe include later?)
+
+"""
+
+def identify_shots(game, team):
+	"""Method to iterate through a list of EventStatistics and identify shots for a given team"""
+	event_stats = EventStatistic.objects.filter(game=game)
+
+	shots = []
+
+	for stat in event_stats:
+		if is_type_id_many(stat,[13,14,15,16]) and stat.team == team:
+			shots.append(stat)
+
+	return shots
+
+def is_inside_box(event):
+	"""Method to determine if an event takes place inside the box"""
+
+	player = event_stat.player
+	x_start = event_stat.x
+	y_start = event_stat.y
+
+	minute = event_stat.minute
+	second = event_stat.second
+	relative_seconds = event_stat.relative_seconds
+
+	x_end = None
+	y_end = None
+	length = None
+	angle = None
+
+	for Q in Qualifier.objects.filter(event_statistic=event_stat):
+		if is_qualifier_id(Q, 140):
+			x_end = float(Q.value)
+		elif is_qualifier_id(Q, 141):
+			y_end = float(Q.value)
+		elif is_qualifier_id(Q, 212):
+			length = float(Q.value)
+		elif is_qualifier_id(Q, 213):
+			angle = float(Q.value)
+
+	player_position = Lineup.objects.get(game=event_stat.game, player=player).player_formation_number
+
+	pass_tuple = (player, minute, second, relative_seconds, x_start, y_start, x_end, y_end, length, angle, player_position)
+
+	return pass_tuple
