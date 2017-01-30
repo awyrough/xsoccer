@@ -5,6 +5,7 @@ import datetime
 import math
 import os
 import csv
+from collections import Counter
 
 from eventstatistics.models import EventStatistic
 from qualifiers.models import Qualifier
@@ -154,6 +155,8 @@ def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 	pass_chain_elements = []
 	#list of player instances
 	player_sequence = []
+	#list of player positions
+	position_sequence = []
 	#list of tuples for keeping track of 4x tuple coordinate information
 	coordinates = []
 	#total distance of ball movement
@@ -166,6 +169,7 @@ def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 		pass_chain_elements.append(item_elements)
 		#record the players involved
 		player_sequence.append(item_elements[0])
+		position_sequence.append(item_elements[10])
 		#record the coordinate movements
 		x1y1x2y2 = (item_elements[4], item_elements[5], item_elements[6], item_elements[7])
 		total_distance += distance(x1y1x2y2)
@@ -193,8 +197,9 @@ def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 			#7 num_passes
 			#8 chain_start_seconds
 			#9 elapsed_time
+			#10 player position sequence
 
-	return [pass_chain_elements,player_sequence,net_coordinates,coordinates,distance(net_coordinates),x_distance(net_coordinates),total_distance,num_passes,chain_start_seconds,elapsed_time]
+	return [pass_chain_elements,player_sequence,net_coordinates,coordinates,distance(net_coordinates),x_distance(net_coordinates),total_distance,num_passes,chain_start_seconds,elapsed_time,position_sequence]
 
 
 def game_diagnostics(game, team, ignore_singles=False):
@@ -213,6 +218,7 @@ def game_diagnostics(game, team, ignore_singles=False):
 		#7 num_passes
 		#8 chain_start_seconds
 		#9 elapsed_time
+		#10 player position sequence
 
 
 	#get passing chains
@@ -228,6 +234,29 @@ def game_diagnostics(game, team, ignore_singles=False):
 			game_diagnostics.append(pass_chain_diagnostic_results)
 
 	return game_diagnostics
+
+def unique_players_involved(player_list):
+	"""Return a list of distinct players involved in passing chain"""
+	unique = []
+	for player in player_list:
+		if player not in unique:
+			unique.append(player)
+
+	#sort the list by player uuid, so if the same combination of players always looks the same
+	unique_sorted = sorted(unique, key=lambda x: x.uuid)
+	return unique_sorted
+
+def frequency_of_lists(list_of_lists):
+	"""Return the frequency of lists appearing in a list of lists"""
+	c = Counter(tuple(x) for x in iter(list_of_lists))
+
+	return c.most_common()
+
+def frequency_of_items(list):
+	"""Return the frequency of items appearing in a list"""
+	c = Counter(list)
+
+	return c.most_common()
 
 def tempo_from_pass_diagnostics(diagnostic):
 	"""Method for handling a chain_pass diagnostic and outputting it's tempo
@@ -332,3 +361,48 @@ def to_csv_single_gameteam_stats(game_diagnostics, team, game):
 		writer.writerow(r)
 
 	output.close()
+
+
+
+def to_csv_histogram(histogram_lists,team,title=""):
+	"""
+	To be run when we want to save to csv a list of frequencies
+	"""
+	os.chdir("/Users/Swoboda/Desktop/analysis3/")
+
+	team_uuid = team.uuid
+
+	output_filename = "analysis3" + "_" + str(team_uuid) + "_" + title + ".csv"
+
+	#create header row
+	header = []
+	header += ["Item"]
+	header += ["Frequency"]
+
+	output = open(output_filename, "a")
+	writer = csv.writer(output, lineterminator="\n")
+
+	writer.writerow(header)
+	len_header = len(header)
+	#Diagnostic legend:
+		#0 pass_chain_elements
+		#1 player_sequence
+		#2 net_coordinates
+		#3 coordinates
+		#4 distance(net_coordinates)
+		#5 x_distance(net_coordinates)
+		#6 total_distance
+		#7 num_passes
+		#8 chain_start_seconds
+		#9 elapsed_time
+	for h in histogram_lists:
+		r = []
+		r += [h[0]]
+		r += [h[1]]
+
+		if len_header != len(r):
+			raise Exception("Rows you're about to print are not same dimension as header. Check this!")
+		writer.writerow(r)
+
+	output.close()
+
