@@ -612,6 +612,53 @@ def ball_touch_intent(event_list, team):
 				intent = "self unintentional"
 	return intent
 
+def is_oppo_dispossessed(event_list, team):
+	"""Returns whether an opponent is disposessed"""
+	disposessed = False
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id == 50 and e.team != team:
+			disposessed = True
+			
+	return disposessed
+
+def identify_between_events(between_events, key_event_team):
+	"""In the case that there are events bewteen the key event and the related event"""
+
+	if is_aerial_duel(between_events):
+		0
+		#print "aerial duel"
+	elif is_gk_save(between_events):
+		0
+		#print "oppo gk save"
+	elif is_gk_save_and_aerial_duel(between_events):
+		0
+		#print "aerial duel + oppo gk save"
+	elif is_successful_take_on(between_events, key_event_team):
+		0
+		#print "successful takeon"
+	elif is_ball_recovery(between_events):
+		0
+		#print "ball recovery"
+	elif is_keeper_sweeper(between_events):
+		0
+		#print "keeper sweeper"
+	elif is_cross_not_claimed(between_events):
+		0
+		#print "cross not claimed"
+	elif is_player_error(between_events):
+		0
+		#print "player error"
+	elif is_oppo_dispossessed(between_events, key_event_team):
+		0
+		#print "opponent disposessed"
+	elif ball_touch_intent(between_events, key_event_team):
+		0
+		#print ball_touch_intent(between_events, key_event_team)
+	else:
+		print between_events
+
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event
@@ -633,36 +680,6 @@ def parse_backtrack(key_event, list_of_events):
 		#print "related event exists"
 		#print "    " + str(related_event)
 	if between_events:
-		if is_aerial_duel(between_events):
-			0
-			#print "aerial duel"
-		elif is_gk_save(between_events):
-			0
-			#print "oppo gk save"
-		elif is_gk_save_and_aerial_duel(between_events):
-			0
-			#print "aerial duel + oppo gk save"
-		elif is_successful_take_on(between_events, key_event_team):
-			0
-			#print "successful takeon"
-		elif is_ball_recovery(between_events):
-			0
-			#print "ball recovery"
-		elif is_keeper_sweeper(between_events):
-			0
-			#print "keeper sweeper"
-		elif is_cross_not_claimed(between_events):
-			0
-			#print "cross not claimed"
-		elif is_player_error(between_events):
-			0
-			#print "player error"
-		elif ball_touch_intent(between_events, key_event_team):
-			0
-			#print ball_touch_intent(between_events, key_event_team)
-		else:
-			print between_events
-
-		#print "    " + str(between_events)
+		identify_between_events(between_events, key_event_team)
 
 	return 0
