@@ -459,6 +459,14 @@ def is_inside_box(event_stat):
 			return True
 	return False
 
+def is_event_qualifier_233(event):
+	"""Boolean of whether an event contains Qualifier 233"""
+	for e in Qualifier.objects.filter(event_statistic=event):
+		if e.qualifier_id == 233:
+			return True
+
+	return False
+
 def backtrack(game, key_event, mins=1, is_reversed=True):
 	"""Given a game and event, backtrack "mins" through the eventfeed and return everything up to event"""
 	ref_minute = key_event.minute
@@ -474,5 +482,5 @@ def backtrack(game, key_event, mins=1, is_reversed=True):
 
 	if is_reversed:
 		desired_events.reverse()
-		
+
 	return desired_events
