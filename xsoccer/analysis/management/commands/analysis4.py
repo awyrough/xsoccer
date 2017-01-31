@@ -84,8 +84,9 @@ class Command(BaseCommand):
 			print "Analyzing Passes for %s in %s" % (db_team, str(game))
 			
 			for item in uf24.identify_shots(game, db_team):
-				print item
+				#print item
 				backtracked = uf24.backtrack(game, item)
-				for item in backtracked:
-					print "   " + str(item)
-				print ""
+				for i in backtracked:
+					continue#print "   " + str(i)
+
+				uf24.parse_backtrack(item, backtracked)

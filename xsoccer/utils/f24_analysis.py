@@ -63,7 +63,7 @@ def is_qualifier_id(instance, qualifierID):
 
 def pass_elements(event_stat):
 	"""Pull pass elements out of an EventStatistic and it's associated Qualifiers"""
-	if event_stat.type_id not in [1]:
+	if is_type_id(event_stat, 1):
 		raise Exception("%s is not a passing event" % (event_stat))
 
 	player = event_stat.player
@@ -470,13 +470,15 @@ def is_event_qualifier_233(event):
 def backtrack(game, key_event, mins=1, is_reversed=True):
 	"""Given a game and event, backtrack "mins" through the eventfeed and return everything up to event"""
 	ref_minute = key_event.minute
-
 	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
 	desired_events = []
 	for e in events:
 		if e.uuid == key_event.uuid:
 			#desired_events.append(e) #include this if we want the key_event included at end of list
 			break
+		#else, if event is type_id = 43 = deleted event
+		elif is_type_id(e, 43): 
+			continue
 		else:
 			desired_events.append(e)
 
@@ -484,3 +486,183 @@ def backtrack(game, key_event, mins=1, is_reversed=True):
 		desired_events.reverse()
 
 	return desired_events
+
+def find_related_event(event):
+	"""Find the event_id of a related event"""
+	value = None
+	#print "qualifiers"
+	#print value
+	for q in Qualifier.objects.filter(event_statistic=event):
+		#print q
+		if q.qualifier_id == 55:
+			value = q.value
+	#print event
+	#print value
+	#print "stop"
+	return value
+
+def list_index(list, value):
+	"""Return the index in the list that houses the value"""
+	#print list 
+	#print value
+	return list.index(value)
+
+def is_aerial_duel(event_list):
+	"""Returns if the event list is 2 events representing an aerial duel"""
+	if len(event_list) != 2:
+		return False
+	for e in event_list:
+		if e.type_id != 44:
+			return False
+	return True
+
+def is_gk_save(event_list):
+	"""Returns if the event list is 1 event representing an opposition GK save"""
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id != 10:
+			return False
+	return True
+
+def is_gk_save_and_aerial_duel(event_list):
+	"""Returns if event list is 3; a save + a duel"""
+	save = False
+	duel = 0
+	if len(event_list) != 3:
+		return False
+	for e in event_list:
+		if e.type_id == 10:
+			save = True
+		elif e.type_id == 44:
+			duel += 1
+
+	return save and duel == 2
+
+def is_successful_take_on(event_list, attacking_team):
+	"""Returns if event list is a player taking on an opponent"""
+	take_on = False
+	missed_challenge = True
+
+	for e in event_list:
+		if e.type_id == 3 and e.team == attacking_team:
+			take_on = True
+		if e.type_id == 45 and e.team != attacking_team:
+			missed_challenge = True
+
+	return take_on and missed_challenge
+
+def is_ball_recovery(event_list):
+	"""Returns if event list is ball recovery"""
+	recovery = False
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id == 49:
+			recovery = True
+
+	return recovery
+
+def is_keeper_sweeper(event_list):
+	"""Returns if event list is keeper sweeper"""
+	keeper_sweeper = False
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id == 59:
+			keeper_sweeper = True
+			
+	return keeper_sweeper
+
+def is_cross_not_claimed(event_list):
+	"""Returns if event list is Goalkeeper event; cross not successfully caught"""
+	cnc = False
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id == 53:
+			cnc = True
+			
+	return cnc
+
+def is_player_error(event_list):
+	"""Returns if event list is an error leading to shot / goal"""
+	error = False
+	if len(event_list) != 1:
+		return False
+	for e in event_list:
+		if e.type_id == 51:
+			error = True
+			
+	return error
+
+def ball_touch_intent(event_list, team):
+	"""Returns intentnional or unintentional if the event is a ball touch"""
+	intent = None
+
+	if len(event_list) == 1:
+		for e in event_list:
+			if e.type_id == 61 and e.outcome == 1 and e.team != team:
+				intent = "oppo intentnional"
+			elif e.type_id == 61 and e.outcome == 0 and e.team != team:
+				intent = "oppo unintentional"
+			elif e.type_id == 61 and e.outcome == 1 and e.team == team:
+				intent = "self intentnional"
+			elif e.type_id == 61 and e.outcome == 0 and e.team == team:
+				intent = "self unintentional"
+	return intent
+
+def parse_backtrack(key_event, list_of_events):
+	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
+	#check if there is an event tied to the key event
+	key_event_team = key_event.team
+	related_event_id = find_related_event(key_event) 
+	related_event = None
+	between_events = None
+	if related_event_id:
+		related_event = EventStatistic.objects.get(team=key_event_team, game=key_event.game, event_id=related_event_id)
+
+		index = list_index(list_of_events, related_event)
+
+		#if the related event is not immidiately preceding the key event
+		if index != 0:
+			between_events = list_of_events[0:index]
+
+	if related_event:
+		0
+		#print "related event exists"
+		#print "    " + str(related_event)
+	if between_events:
+		if is_aerial_duel(between_events):
+			0
+			#print "aerial duel"
+		elif is_gk_save(between_events):
+			0
+			#print "oppo gk save"
+		elif is_gk_save_and_aerial_duel(between_events):
+			0
+			#print "aerial duel + oppo gk save"
+		elif is_successful_take_on(between_events, key_event_team):
+			0
+			#print "successful takeon"
+		elif is_ball_recovery(between_events):
+			0
+			#print "ball recovery"
+		elif is_keeper_sweeper(between_events):
+			0
+			#print "keeper sweeper"
+		elif is_cross_not_claimed(between_events):
+			0
+			#print "cross not claimed"
+		elif is_player_error(between_events):
+			0
+			#print "player error"
+		elif ball_touch_intent(between_events, key_event_team):
+			0
+			#print ball_touch_intent(between_events, key_event_team)
+		else:
+			print between_events
+
+		#print "    " + str(between_events)
+
+	return 0
