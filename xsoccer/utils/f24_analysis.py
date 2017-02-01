@@ -677,8 +677,6 @@ def parse_backtrack(key_event, list_of_events):
 
 	if related_event:
 		0
-		#print "related event exists"
-		#print "    " + str(related_event)
 	if between_events:
 		identify_between_events(between_events, key_event_team)
 
