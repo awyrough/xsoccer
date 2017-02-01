@@ -85,7 +85,7 @@ class Command(BaseCommand):
 			
 			for item in uf24.identify_shots(game, db_team):
 				#print item
-				backtracked = uf24.backtrack(game, item)
+				backtracked = uf24.backtrack(item)
 				for i in backtracked:
 					continue#print "   " + str(i)
 
