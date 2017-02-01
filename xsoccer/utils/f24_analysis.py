@@ -603,13 +603,13 @@ def ball_touch_intent(event_list, team):
 	if len(event_list) == 1:
 		for e in event_list:
 			if e.type_id == 61 and e.outcome == 1 and e.team != team:
-				intent = "oppo intentnional"
+				intent = "Oppo. Intentional Ball Touch"
 			elif e.type_id == 61 and e.outcome == 0 and e.team != team:
-				intent = "oppo unintentional"
+				intent = "Oppo. Unitentional Ball Touch"
 			elif e.type_id == 61 and e.outcome == 1 and e.team == team:
-				intent = "self intentnional"
+				intent = "Self Intentional Ball Touch"
 			elif e.type_id == 61 and e.outcome == 0 and e.team == team:
-				intent = "self unintentional"
+				intent = "Self Unintentional Ball Touch"
 	return intent
 
 def is_oppo_dispossessed(event_list, team):
@@ -624,40 +624,30 @@ def is_oppo_dispossessed(event_list, team):
 	return disposessed
 
 def identify_between_events(between_events, key_event_team):
-	"""In the case that there are events bewteen the key event and the related event"""
+	"""In the case that there are events between the key event and the related event"""
 
 	if is_aerial_duel(between_events):
-		0
-		#print "aerial duel"
+		return "Aerial Duel"
 	elif is_gk_save(between_events):
-		0
-		#print "oppo gk save"
+		return "GK Save"
 	elif is_gk_save_and_aerial_duel(between_events):
-		0
-		#print "aerial duel + oppo gk save"
+		return "Aerial Duel + GK Save"
 	elif is_successful_take_on(between_events, key_event_team):
-		0
-		#print "successful takeon"
+		return "Successful Take-On"
 	elif is_ball_recovery(between_events):
-		0
-		#print "ball recovery"
+		return "Ball Recovery"
 	elif is_keeper_sweeper(between_events):
-		0
-		#print "keeper sweeper"
+		return "Keeper Sweeper"
 	elif is_cross_not_claimed(between_events):
-		0
-		#print "cross not claimed"
+		return "Cross Not Claimed"
 	elif is_player_error(between_events):
-		0
-		#print "player error"
+		return "Oppo. Player Error"
 	elif is_oppo_dispossessed(between_events, key_event_team):
-		0
-		#print "opponent disposessed"
+		return "Oppo. Dispossessed"
 	elif ball_touch_intent(between_events, key_event_team):
-		0
-		#print ball_touch_intent(between_events, key_event_team)
+		return ball_touch_intent(between_events, key_event_team)
 	else:
-		print between_events
+		return between_events
 
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
@@ -678,6 +668,6 @@ def parse_backtrack(key_event, list_of_events):
 	if related_event:
 		0
 	if between_events:
-		identify_between_events(between_events, key_event_team)
+		print identify_between_events(between_events, key_event_team)
 
 	return 0
