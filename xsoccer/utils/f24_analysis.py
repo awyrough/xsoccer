@@ -467,45 +467,18 @@ def is_event_qualifier_233(event):
 
 	return False
 
-def backtrack(key_event, mins=1, is_reversed=True):
-	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
-	game = key_event.game
-	ref_minute = key_event.minute
-	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
-	desired_events = []
-	for e in events:
-		if e.uuid == key_event.uuid:
-			#desired_events.append(e) #include this if we want the key_event included at end of list
-			break
-		#else, if event is type_id = 43 = deleted event
-		elif is_type_id(e, 43): 
-			continue
-		else:
-			desired_events.append(e)
-
-	if is_reversed:
-		desired_events.reverse()
-
-	return desired_events
-
 def find_related_event(event):
 	"""Find the event_id of a related event"""
 	value = None
-	#print "qualifiers"
-	#print value
+
 	for q in Qualifier.objects.filter(event_statistic=event):
-		#print q
 		if q.qualifier_id == 55:
 			value = q.value
-	#print event
-	#print value
-	#print "stop"
+
 	return value
 
 def list_index(list, value):
 	"""Return the index in the list that houses the value"""
-	#print list 
-	#print value
 	return list.index(value)
 
 def is_aerial_duel(event_list):
@@ -654,6 +627,7 @@ def get_pass_chain_count(input_event):
 	"""Given a single event, look at the last minute of events 
 	in reverse order (i.e. last to first) and find the number of passes 
 	leading up to the single input event"""
+	print input_event
 	backtracked = backtrack(input_event)
 
 	pass_count = 0
@@ -669,6 +643,27 @@ def get_pass_chain_count(input_event):
 			return pass_count
 
 	return pass_count
+
+def backtrack(key_event, mins=1, is_reversed=True):
+	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
+	game = key_event.game
+	ref_minute = key_event.minute
+	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
+	desired_events = []
+	for e in events:
+		if e.uuid == key_event.uuid:
+			#desired_events.append(e) #include this if we want the key_event included at end of list
+			break
+		#else, if event is type_id = 43 = deleted event
+		elif is_type_id(e, 43): 
+			continue
+		else:
+			desired_events.append(e)
+
+	if is_reversed:
+		desired_events.reverse()
+
+	return desired_events
 
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
@@ -687,17 +682,15 @@ def parse_backtrack(key_event, list_of_events):
 			between_events = list_of_events[0:index]
 
 	if related_event and between_events:
-		print key_event
 		if get_pass_chain_count(related_event) == 0:
+			0
 			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
 	elif related_event and not between_events:
-		print key_event
 		if get_pass_chain_count(related_event) == 0:
-			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
+			0#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
 	else:
-		print key_event
-		if get_pass_chain_count(related_event) == 0:
-			#FIGURE OUT WHAT ELSE COULD LEAD UP TO SHOT
+		if get_pass_chain_count(key_event) == 0:
+			0#FIGURE OUT WHAT ELSE COULD LEAD UP TO SHOT
 
 	# if between_events:
 	# 	print identify_between_events(between_events, key_event_team)
