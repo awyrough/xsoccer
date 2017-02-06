@@ -585,6 +585,18 @@ def is_oppo_dispossessed(event_list, team):
 			
 	return disposessed
 
+def is_oppo_clearance_from_self_pass(event_list, team):
+	"""Returns whether an opponent cleared the ball after self was passing"""
+	clearance = False
+	self_pass = False
+	for e in event_list[:2]:
+		if e.type_id == 12 and e.team != team:
+			clearance = True
+		if e.type_id == 1 and e.team == team:
+			self_pass = True
+			
+	return clearance and self_pass
+
 def is_oppo_clearance(event_list, team):
 	"""Returns whether an opponent cleared the ball"""
 	clearance = False
@@ -662,6 +674,8 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 		return "Oppo. Dispossessed"
 	elif ball_touch_intent(backtracked_events, key_event_team):
 		return ball_touch_intent(backtracked_events, key_event_team)
+	elif is_oppo_clearance_from_self_pass(backtracked_events, key_event_team):
+		return "Oppo. Clearance from Self Passing"
 	elif is_oppo_clearance(backtracked_events, key_event_team):
 		return "Oppo. Clearance"
 	elif is_oppo_pass(backtracked_events, key_event_team):
@@ -704,8 +718,7 @@ def get_pass_chain_count(input_event, include_event=False):
 	"""Given a single event, look at the last minute of events 
 	in reverse order (i.e. last to first) and find the number of passes 
 	leading up to the single input event"""
-	# print input_event
-	backtracked = backtrack(input_event, include_event)
+	backtracked = backtrack(input_event, include_event=include_event)
 
 	pass_count = 0
 	for item in backtracked:
@@ -724,6 +737,8 @@ def get_pass_chain_count(input_event, include_event=False):
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event
+	print "\n"
+	print key_event
 	key_event_team = key_event.team
 	related_event_id = find_related_event(key_event) 
 	related_event = None
@@ -744,7 +759,8 @@ def parse_backtrack(key_event, list_of_events):
 			print "    NOTE: events do exist between related event & shot"
 		else:
 			print "- %s passes + %s" % (pass_count, event_translator_eventlist(between_events, key_event_team))
-	
+			print "    NOTE: events do exist between related event & shot"
+
 	elif related_event and not between_events:
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
@@ -753,7 +769,8 @@ def parse_backtrack(key_event, list_of_events):
 			print "    NOTE: events do not exist between related event & shot"
 		else:
 			print "- %s passes " % (pass_count)
-	
+			print "    NOTE: events do not exist between related event & shot"
+
 	else:
 		pass_count = get_pass_chain_count(key_event)
 		if pass_count == 0:
