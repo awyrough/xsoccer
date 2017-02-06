@@ -623,27 +623,6 @@ def identify_between_events(between_events, key_event_team):
 	else:
 		return between_events
 
-def get_pass_chain_count(input_event):
-	"""Given a single event, look at the last minute of events 
-	in reverse order (i.e. last to first) and find the number of passes 
-	leading up to the single input event"""
-	print input_event
-	backtracked = backtrack(input_event)
-
-	pass_count = 0
-	for item in backtracked:
-		#if it's the same team's pass event, count it
-		if item.type_id == 1 and item.team == input_event.team:
-			pass_count += 1
-		#if it's the same team's loose ball recovery, don't break out of the chain
-		elif item.type_id == 49 and item.team == input_event.team:
-			continue
-		#if it's anything else, end the pass count chain
-		else:
-			return pass_count
-
-	return pass_count
-
 def backtrack(key_event, mins=1, is_reversed=True):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
 	game = key_event.game
@@ -665,6 +644,46 @@ def backtrack(key_event, mins=1, is_reversed=True):
 
 	return desired_events
 
+def get_pass_chain_count(input_event):
+	"""Given a single event, look at the last minute of events 
+	in reverse order (i.e. last to first) and find the number of passes 
+	leading up to the single input event"""
+	# print input_event
+	backtracked = backtrack(input_event)
+
+	pass_count = 0
+	for item in backtracked:
+		# print item
+		# print item.type_id
+		# print item.team
+		# print pass_count
+		# print ""
+		#if it's the same team's pass event, count it
+		if item.type_id == 1 and item.team == input_event.team:
+			pass_count += 1
+		#if it's the same team's loose ball recovery, don't break out of the chain
+		elif item.type_id == 49 and item.team == input_event.team:
+			continue
+		#if it's anything else, end the pass count chain
+		else:
+			break
+
+	return pass_count
+
+def event_translator(event_to_translate, team):
+	"""Method for *converting* any unknown type of event to a readable event"""
+	TRANSLATABLE_OPTA_EVENTS = {
+		"12":"Clearance Under Pressure"
+		,"":""
+		,"":""
+		,"":""
+		,"":""
+		,"":""
+		,"":""
+		,"":""
+		,"":""
+	}
+
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event
@@ -681,16 +700,31 @@ def parse_backtrack(key_event, list_of_events):
 		if index != 0:
 			between_events = list_of_events[0:index]
 
+	print "\n"
 	if related_event and between_events:
 		if get_pass_chain_count(related_event) == 0:
-			0
+			print "   related event not a pass, and events exist between related event & shot"
+			print related_event
+			print backtrack(related_event)
+		else:
+			print "[X] identified leadup -> passes w/ key event + between_events"
 			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
 	elif related_event and not between_events:
 		if get_pass_chain_count(related_event) == 0:
-			0#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
+			print "   related event not a pass, and no between events"
+			print related_event
+			print backtrack(related_event)
+		else:
+			print "[X] identified leadup -> passes w/ key event"
+			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
 	else:
 		if get_pass_chain_count(key_event) == 0:
-			0#FIGURE OUT WHAT ELSE COULD LEAD UP TO SHOT
+			print "   no related event"
+			print key_event
+			print backtrack(key_event)
+		else:
+			print "[X] identified leadup -> passes"
+			#FIGURE OUT WHAT ELSE COULD LEAD UP TO SHOT
 
 	# if between_events:
 	# 	print identify_between_events(between_events, key_event_team)
