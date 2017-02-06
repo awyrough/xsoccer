@@ -489,6 +489,7 @@ def is_aerial_duel(event_list, team):
 			count += 1
 	
 	if count == 2:
+		print "true aerial duel"
 		return True
 	else:
 		return False
@@ -515,7 +516,7 @@ def is_gk_save_and_aerial_duel(event_list, team):
 def is_successful_take_on(event_list, team):
 	"""Returns if event list has a player taking on an opponent in the front"""
 	take_on = False
-	missed_challenge = True
+	missed_challenge = False
 
 	for e in event_list[:2]:
 		if e.type_id == 3 and e.team == team:
@@ -571,9 +572,9 @@ def ball_touch_intent(event_list, team):
 		elif e.type_id == 61 and e.outcome == 0 and e.team != team:
 			intent = "Oppo. Unitentional Ball Touch"
 		elif e.type_id == 61 and e.outcome == 1 and e.team == team:
-			intent = "Self Intentional Ball Touch"
+			intent = "Intentional Ball Touch"
 		elif e.type_id == 61 and e.outcome == 0 and e.team == team:
-			intent = "Self Unintentional Ball Touch"
+			intent = "Unintentional Ball Touch"
 	return intent
 
 def is_oppo_dispossessed(event_list, team):
@@ -585,35 +586,99 @@ def is_oppo_dispossessed(event_list, team):
 			
 	return disposessed
 
-def identify_events(backtracked_events, key_event_team):
-	"""Add identifier logic to a set of events"""
+def is_oppo_clearance(event_list, team):
+	"""Returns whether an opponent cleared the ball"""
+	clearance = False
+	for e in event_list[:1]:
+		if e.type_id == 12 and e.team != team:
+			clearance = True
+			
+	return clearance
 
+def is_oppo_pass(event_list, team):
+	"""Returns whether an opponent passed the ball (likely a bad pass)"""
+	oppo_pass = False
+	for e in event_list[:1]:
+		if e.type_id == 1 and e.team != team and e.outcome == 0:
+			oppo_pass = True
+			
+	return oppo_pass
+
+
+def is_self_corner(event_list, team):
+	"""Returns whether the team had a corner"""
+	is_self_corner = False
+	for e in event_list[:2]:
+		if e.type_id == 6 and e.team == team and e.outcome == 1:
+			is_self_corner = True
+			
+	return is_self_corner
+
+def is_interception(event_list, team):
+	"""Returns whether the opponent intercepted the ball"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 8 and e.team != team:
+			is_true = True
+
+	return is_true
+
+def is_blocked_pass(event_list, team):
+	"""Returns whether the opponent blocked the ball"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 74 and e.team != team:
+			is_true = True
+
+	return is_true
+
+def event_translator(event, include_key_event=False):
+	"""Uses logic of below for just an individual event"""
+	backtracked_events = backtrack(event, include_key_event)
+	event_team = event.team
+
+	return event_translator_eventlist(backtracked_events, event_team)
+
+
+
+def event_translator_eventlist(backtracked_events, key_event_team):
+	"""Add event translating logic to a set of events prior to input event"""
 	if is_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel"
 	elif is_gk_save(backtracked_events, key_event_team):
-		return "GK Save"
+		return "Oppo. GK Save"
 	elif is_gk_save_and_aerial_duel(backtracked_events, key_event_team):
-		return "Aerial Duel + GK Save"
+		return "Aerial Duel + Oppo. GK Save"
 	elif is_successful_take_on(backtracked_events, key_event_team):
 		return "Successful Take-On"
 	elif is_ball_recovery(backtracked_events, key_event_team):
 		return "Ball Recovery"
 	elif is_keeper_sweeper(backtracked_events, key_event_team):
-		return "Keeper Sweeper"
+		return "Oppo. Keeper Sweeper"
 	elif is_cross_not_claimed(backtracked_events, key_event_team):
-		return "Cross Not Claimed"
+		return "Oppo. Cross Not Claimed"
 	elif is_opponent_player_error(backtracked_events, key_event_team):
 		return "Oppo. Player Error"
 	elif is_oppo_dispossessed(backtracked_events, key_event_team):
 		return "Oppo. Dispossessed"
 	elif ball_touch_intent(backtracked_events, key_event_team):
 		return ball_touch_intent(backtracked_events, key_event_team)
+	elif is_oppo_clearance(backtracked_events, key_event_team):
+		return "Oppo. Clearance"
+	elif is_oppo_pass(backtracked_events, key_event_team):
+		return "Oppo. Pass"
+	elif is_self_corner(backtracked_events, key_event_team):
+		return "Attacking Corner"
+	elif is_interception(backtracked_events, key_event_team):
+		return "Oppo. Interception"
+	elif is_blocked_pass(backtracked_events, key_event_team):
+		return "Oppo. Blocked Pass"
 	else:
-		print "Note: couldn't identify events in the following: "
+		print "\n"
 		print backtracked_events
-		return backtracked_events
+		raise Exception("Note: couldn't identify events in the above")
 
-def backtrack(key_event, mins=1, is_reversed=True):
+def backtrack(key_event, mins=1, is_reversed=True, include_key_event=False):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
 	game = key_event.game
 	ref_minute = key_event.minute
@@ -621,7 +686,9 @@ def backtrack(key_event, mins=1, is_reversed=True):
 	desired_events = []
 	for e in events:
 		if e.uuid == key_event.uuid:
-			#desired_events.append(e) #include this if we want the key_event included at end of list
+			#include this if we want the key_event included at end of list
+			if include_key_event:
+				desired_events.append(e) 
 			break
 		#else, if event is type_id = 43 = deleted event
 		elif is_type_id(e, 43): 
@@ -643,11 +710,6 @@ def get_pass_chain_count(input_event):
 
 	pass_count = 0
 	for item in backtracked:
-		# print item
-		# print item.type_id
-		# print item.team
-		# print pass_count
-		# print ""
 		#if it's the same team's pass event, count it
 		if item.type_id == 1 and item.team == input_event.team:
 			pass_count += 1
@@ -659,20 +721,6 @@ def get_pass_chain_count(input_event):
 			break
 
 	return pass_count
-
-def event_translator(event_to_translate, team):
-	"""Method for *converting* any unknown type of event to a readable event"""
-	TRANSLATABLE_OPTA_EVENTS = {
-		"12":"Clearance Under Pressure"
-		,"":""
-		,"":""
-		,"":""
-		,"":""
-		,"":""
-		,"":""
-		,"":""
-		,"":""
-	}
 
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
@@ -690,33 +738,27 @@ def parse_backtrack(key_event, list_of_events):
 		if index != 0:
 			between_events = list_of_events[0:index]
 
-	print "\n"
 	if related_event and between_events:
-		if get_pass_chain_count(related_event) == 0:
-			print "   related event not a pass, and events exist between related event & shot"
-			print related_event
-			print backtrack(related_event)
+		pass_count = get_pass_chain_count(related_event)
+		if pass_count == 0:
+			print "- %s + %s" % (event_translator(related_event, include_key_event=True), event_translator_eventlist(between_events, key_event_team)) 
+			print "    NOTE: events do exist between related event & shot"
 		else:
-			print "[X] identified leadup -> passes w/ key event + between_events"
-			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
+			print "- %s passes + %s" % (pass_count, event_translator_eventlist(between_events, key_event_team))
+	
 	elif related_event and not between_events:
-		if get_pass_chain_count(related_event) == 0:
-			print "   related event not a pass, and no between events"
+		pass_count = get_pass_chain_count(related_event)
+		if pass_count == 0:
+			print "- %s" % (event_translator(related_event, include_key_event=True))
 			print related_event
-			print backtrack(related_event)
+			print "    NOTE: events do not exist between related event & shot"
 		else:
-			print "[X] identified leadup -> passes w/ key event"
-			#FIGURE OUT WHAT ELSE COULD LEAD UP TO KEY EVENT (which led to shot)
+			print "- %s passes " % (pass_count)
+	
 	else:
-		if get_pass_chain_count(key_event) == 0:
-			print "   no related event"
-			print key_event
-			print backtrack(key_event)
+		pass_count = get_pass_chain_count(key_event)
+		if pass_count == 0:
+			print "- " + event_translator(key_event)
+			print "    NOTE: no related event"
 		else:
-			print "[X] identified leadup -> passes"
-			#FIGURE OUT WHAT ELSE COULD LEAD UP TO SHOT
-
-	# if between_events:
-	# 	print identify_between_events(between_events, key_event_team)
-
-	return 0
+			print "- %s passes (no assigned related event)" % (pass_count)
