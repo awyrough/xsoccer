@@ -481,31 +481,30 @@ def list_index(list, value):
 	"""Return the index in the list that houses the value"""
 	return list.index(value)
 
-def is_aerial_duel(event_list):
+def is_aerial_duel(event_list, team):
 	"""Returns if the event list is 2 events representing an aerial duel"""
-	if len(event_list) != 2:
+	count = 0
+	for e in event_list[:2]:
+		if e.type_id == 44:
+			count += 1
+	
+	if count == 2:
+		return True
+	else:
 		return False
-	for e in event_list:
-		if e.type_id != 44:
-			return False
-	return True
 
-def is_gk_save(event_list):
+def is_gk_save(event_list, team):
 	"""Returns if the event list is 1 event representing an opposition GK save"""
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
-		if e.type_id != 10:
-			return False
-	return True
+	for e in event_list[:1]:
+		if e.type_id == 10:
+			return True
+	return False
 
-def is_gk_save_and_aerial_duel(event_list):
+def is_gk_save_and_aerial_duel(event_list, team):
 	"""Returns if event list is 3; a save + a duel"""
 	save = False
 	duel = 0
-	if len(event_list) != 3:
-		return False
-	for e in event_list:
+	for e in event_list[:3]:
 		if e.type_id == 10:
 			save = True
 		elif e.type_id == 44:
@@ -513,59 +512,51 @@ def is_gk_save_and_aerial_duel(event_list):
 
 	return save and duel == 2
 
-def is_successful_take_on(event_list, attacking_team):
-	"""Returns if event list is a player taking on an opponent"""
+def is_successful_take_on(event_list, team):
+	"""Returns if event list has a player taking on an opponent in the front"""
 	take_on = False
 	missed_challenge = True
 
-	for e in event_list:
-		if e.type_id == 3 and e.team == attacking_team:
+	for e in event_list[:2]:
+		if e.type_id == 3 and e.team == team:
 			take_on = True
-		if e.type_id == 45 and e.team != attacking_team:
+		if e.type_id == 45 and e.team != team:
 			missed_challenge = True
 
 	return take_on and missed_challenge
 
-def is_ball_recovery(event_list):
-	"""Returns if event list is ball recovery"""
+def is_ball_recovery(event_list, team):
+	"""Returns if event list has a ball recovery in the front"""
 	recovery = False
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
+	for e in event_list[:1]:
 		if e.type_id == 49:
 			recovery = True
 
 	return recovery
 
-def is_keeper_sweeper(event_list):
-	"""Returns if event list is keeper sweeper"""
+def is_keeper_sweeper(event_list, team):
+	"""Returns if event list has keeper sweeper event in the front"""
 	keeper_sweeper = False
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
+	for e in event_list[:1]:
 		if e.type_id == 59:
 			keeper_sweeper = True
 			
 	return keeper_sweeper
 
-def is_cross_not_claimed(event_list):
-	"""Returns if event list is Goalkeeper event; cross not successfully caught"""
+def is_cross_not_claimed(event_list, team):
+	"""Returns if event list has a cross-not-claimed Goalkeeper event; cross not successfully caught"""
 	cnc = False
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
+	for e in event_list[:1]:
 		if e.type_id == 53:
 			cnc = True
 			
 	return cnc
 
-def is_player_error(event_list):
-	"""Returns if event list is an error leading to shot / goal"""
+def is_opponent_player_error(event_list, team):
+	"""Returns if event list has an opponent error"""
 	error = False
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
-		if e.type_id == 51:
+	for e in event_list[:1]:
+		if e.type_id == 51 and e.team != team:
 			error = True
 			
 	return error
@@ -574,54 +565,53 @@ def ball_touch_intent(event_list, team):
 	"""Returns intentnional or unintentional if the event is a ball touch"""
 	intent = None
 
-	if len(event_list) == 1:
-		for e in event_list:
-			if e.type_id == 61 and e.outcome == 1 and e.team != team:
-				intent = "Oppo. Intentional Ball Touch"
-			elif e.type_id == 61 and e.outcome == 0 and e.team != team:
-				intent = "Oppo. Unitentional Ball Touch"
-			elif e.type_id == 61 and e.outcome == 1 and e.team == team:
-				intent = "Self Intentional Ball Touch"
-			elif e.type_id == 61 and e.outcome == 0 and e.team == team:
-				intent = "Self Unintentional Ball Touch"
+	for e in event_list[:1]:
+		if e.type_id == 61 and e.outcome == 1 and e.team != team:
+			intent = "Oppo. Intentional Ball Touch"
+		elif e.type_id == 61 and e.outcome == 0 and e.team != team:
+			intent = "Oppo. Unitentional Ball Touch"
+		elif e.type_id == 61 and e.outcome == 1 and e.team == team:
+			intent = "Self Intentional Ball Touch"
+		elif e.type_id == 61 and e.outcome == 0 and e.team == team:
+			intent = "Self Unintentional Ball Touch"
 	return intent
 
 def is_oppo_dispossessed(event_list, team):
 	"""Returns whether an opponent is disposessed"""
 	disposessed = False
-	if len(event_list) != 1:
-		return False
-	for e in event_list:
+	for e in event_list[:1]:
 		if e.type_id == 50 and e.team != team:
 			disposessed = True
 			
 	return disposessed
 
-def identify_between_events(between_events, key_event_team):
-	"""In the case that there are events between the key event and the related event"""
+def identify_events(backtracked_events, key_event_team):
+	"""Add identifier logic to a set of events"""
 
-	if is_aerial_duel(between_events):
+	if is_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel"
-	elif is_gk_save(between_events):
+	elif is_gk_save(backtracked_events, key_event_team):
 		return "GK Save"
-	elif is_gk_save_and_aerial_duel(between_events):
+	elif is_gk_save_and_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel + GK Save"
-	elif is_successful_take_on(between_events, key_event_team):
+	elif is_successful_take_on(backtracked_events, key_event_team):
 		return "Successful Take-On"
-	elif is_ball_recovery(between_events):
+	elif is_ball_recovery(backtracked_events, key_event_team):
 		return "Ball Recovery"
-	elif is_keeper_sweeper(between_events):
+	elif is_keeper_sweeper(backtracked_events, key_event_team):
 		return "Keeper Sweeper"
-	elif is_cross_not_claimed(between_events):
+	elif is_cross_not_claimed(backtracked_events, key_event_team):
 		return "Cross Not Claimed"
-	elif is_player_error(between_events):
+	elif is_opponent_player_error(backtracked_events, key_event_team):
 		return "Oppo. Player Error"
-	elif is_oppo_dispossessed(between_events, key_event_team):
+	elif is_oppo_dispossessed(backtracked_events, key_event_team):
 		return "Oppo. Dispossessed"
-	elif ball_touch_intent(between_events, key_event_team):
-		return ball_touch_intent(between_events, key_event_team)
+	elif ball_touch_intent(backtracked_events, key_event_team):
+		return ball_touch_intent(backtracked_events, key_event_team)
 	else:
-		return between_events
+		print "Note: couldn't identify events in the following: "
+		print backtracked_events
+		return backtracked_events
 
 def backtrack(key_event, mins=1, is_reversed=True):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
