@@ -489,7 +489,6 @@ def is_aerial_duel(event_list, team):
 			count += 1
 	
 	if count == 2:
-		print "true aerial duel"
 		return True
 	else:
 		return False
@@ -632,9 +631,9 @@ def is_blocked_pass(event_list, team):
 
 	return is_true
 
-def event_translator(event, include_key_event=False):
+def event_translator(event, include_event=False):
 	"""Uses logic of below for just an individual event"""
-	backtracked_events = backtrack(event, include_key_event)
+	backtracked_events = backtrack(event, include_event)
 	event_team = event.team
 
 	return event_translator_eventlist(backtracked_events, event_team)
@@ -678,7 +677,7 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 		print backtracked_events
 		raise Exception("Note: couldn't identify events in the above")
 
-def backtrack(key_event, mins=1, is_reversed=True, include_key_event=False):
+def backtrack(key_event, mins=1, is_reversed=True, include_event=False):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
 	game = key_event.game
 	ref_minute = key_event.minute
@@ -687,7 +686,7 @@ def backtrack(key_event, mins=1, is_reversed=True, include_key_event=False):
 	for e in events:
 		if e.uuid == key_event.uuid:
 			#include this if we want the key_event included at end of list
-			if include_key_event:
+			if include_event:
 				desired_events.append(e) 
 			break
 		#else, if event is type_id = 43 = deleted event
@@ -701,12 +700,12 @@ def backtrack(key_event, mins=1, is_reversed=True, include_key_event=False):
 
 	return desired_events
 
-def get_pass_chain_count(input_event):
+def get_pass_chain_count(input_event, include_event=False):
 	"""Given a single event, look at the last minute of events 
 	in reverse order (i.e. last to first) and find the number of passes 
 	leading up to the single input event"""
 	# print input_event
-	backtracked = backtrack(input_event)
+	backtracked = backtrack(input_event, include_event)
 
 	pass_count = 0
 	for item in backtracked:
@@ -739,17 +738,17 @@ def parse_backtrack(key_event, list_of_events):
 			between_events = list_of_events[0:index]
 
 	if related_event and between_events:
-		pass_count = get_pass_chain_count(related_event)
+		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
-			print "- %s + %s" % (event_translator(related_event, include_key_event=True), event_translator_eventlist(between_events, key_event_team)) 
+			print "- %s + %s" % (event_translator(related_event, include_event=True), event_translator_eventlist(between_events, key_event_team)) 
 			print "    NOTE: events do exist between related event & shot"
 		else:
 			print "- %s passes + %s" % (pass_count, event_translator_eventlist(between_events, key_event_team))
 	
 	elif related_event and not between_events:
-		pass_count = get_pass_chain_count(related_event)
+		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
-			print "- %s" % (event_translator(related_event, include_key_event=True))
+			print "- %s" % (event_translator(related_event, include_event=True))
 			print related_event
 			print "    NOTE: events do not exist between related event & shot"
 		else:
