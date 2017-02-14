@@ -603,7 +603,7 @@ def is_oppo_clearance(event_list, team):
 	for e in event_list[:1]:
 		if e.type_id == 12 and e.team != team:
 			clearance = True
-			
+
 	return clearance
 
 def is_oppo_pass(event_list, team):
@@ -645,12 +645,14 @@ def is_blocked_pass(event_list, team):
 
 def event_translator(event, include_event=False):
 	"""Uses logic of below for just an individual event"""
-	backtracked_events = backtrack(event, include_event)
+	# print "start: event_translator"
+	backtracked_events = backtrack(event, include_event=include_event)
 	event_team = event.team
+	# print event
+	# print backtracked_events
+	# print "end: event_translator"
 
 	return event_translator_eventlist(backtracked_events, event_team)
-
-
 
 def event_translator_eventlist(backtracked_events, key_event_team):
 	"""Add event translating logic to a set of events prior to input event"""
@@ -687,16 +689,25 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 	elif is_blocked_pass(backtracked_events, key_event_team):
 		return "Oppo. Blocked Pass"
 	else:
-		print "\n"
+		print "Uhoh..."
 		print backtracked_events
 		raise Exception("Note: couldn't identify events in the above")
 
-def backtrack(key_event, mins=1, is_reversed=True, include_event=False):
+def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
 	game = key_event.game
 	ref_minute = key_event.minute
 	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
 	desired_events = []
+	# print "<<<< start: backtrack"
+	# print "key_event = " + str(key_event)
+	# print ref_minute
+	# print ref_minute-mins
+	# print mins
+	# print game
+	# for e in events: print e
+	# print ">>>>> end: backtrack"
+
 	for e in events:
 		if e.uuid == key_event.uuid:
 			#include this if we want the key_event included at end of list
@@ -737,8 +748,8 @@ def get_pass_chain_count(input_event, include_event=False):
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event
-	print "\n"
-	print key_event
+	print "key_event = " +str(key_event)
+	#print list_of_events
 	key_event_team = key_event.team
 	related_event_id = find_related_event(key_event) 
 	related_event = None
@@ -753,6 +764,7 @@ def parse_backtrack(key_event, list_of_events):
 			between_events = list_of_events[0:index]
 
 	if related_event and between_events:
+		print "parse option 1) Related event; events between"
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
 			print "- %s + %s" % (event_translator(related_event, include_event=True), event_translator_eventlist(between_events, key_event_team)) 
@@ -762,6 +774,7 @@ def parse_backtrack(key_event, list_of_events):
 			print "    NOTE: events do exist between related event & shot"
 
 	elif related_event and not between_events:
+		print "parse option 2) Related event; no events between"
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
 			print "- %s" % (event_translator(related_event, include_event=True))
@@ -772,6 +785,7 @@ def parse_backtrack(key_event, list_of_events):
 			print "    NOTE: events do not exist between related event & shot"
 
 	else:
+		print "parse option 3) No related event"
 		pass_count = get_pass_chain_count(key_event)
 		if pass_count == 0:
 			print "- " + event_translator(key_event)
