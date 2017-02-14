@@ -495,10 +495,19 @@ def is_aerial_duel(event_list, team):
 
 def is_gk_save(event_list, team):
 	"""Returns if the event list is 1 event representing an opposition GK save"""
+	is_save = False
+	is_saved = False
 	for e in event_list[:1]:
 		if e.type_id == 10:
 			return True
-	return False
+	#check if a self miss is recorded before the opponent GK save
+	for e in event_list[:2]:
+		if e.type_id == 10 and e.team != team:
+			is_save = True
+		if e.type_id == 15 and e.team == team:
+			is_saved = True
+
+	return is_saved and is_save
 
 def is_gk_save_and_aerial_duel(event_list, team):
 	"""Returns if event list is 3; a save + a duel"""
@@ -524,6 +533,42 @@ def is_successful_take_on(event_list, team):
 			missed_challenge = True
 
 	return take_on and missed_challenge
+
+
+def is_oppo_tackle_and_self_dispossessed(event_list, team):
+	"""Returns if event list has an attacking player losing possession due to opponent tackle"""
+	tackle = False
+	disposessed = False
+
+	for e in event_list[:2]:
+		if e.type_id == 50 and e.team == team:
+			disposessed = True
+		if e.type_id == 7 and e.team != team:
+			tackle = True
+
+	return tackle and disposessed
+
+def is_self_tackle_and_oppo_dispossessed(event_list, team):
+	"""Returns if event list has an attacking player losing possession due to opponent tackle"""
+	tackle = False
+	disposessed = False
+
+	for e in event_list[:2]:
+		if e.type_id == 50 and e.team != team:
+			disposessed = True
+		if e.type_id == 7 and e.team == team:
+			tackle = True
+
+	return tackle and disposessed
+def is_tackle(event_list, team):
+	"""Returns if event list has an attacking player losing possession due to opponent tackle"""
+	tackle = False
+
+	for e in event_list[:1]:
+		if e.type_id == 7 and e.team != team:
+			tackle = True
+
+	return tackle 
 
 def is_ball_recovery(event_list, team):
 	"""Returns if event list has a ball recovery in the front"""
@@ -585,6 +630,15 @@ def is_oppo_dispossessed(event_list, team):
 			
 	return disposessed
 
+def is_self_saved(event_list, team):
+	"""Returns whether self team had a shot that was saved"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 15 and e.team == team:
+			is_true = True
+			
+	return is_true
+
 def is_oppo_clearance_from_self_pass(event_list, team):
 	"""Returns whether an opponent cleared the ball after self was passing"""
 	clearance = False
@@ -615,6 +669,14 @@ def is_oppo_pass(event_list, team):
 			
 	return oppo_pass
 
+def is_missed_shot(event_list, team):
+	"""Returns whether the self team missed a shot"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 13 and e.team == team:
+			is_true = True
+			
+	return is_true
 
 def is_self_corner(event_list, team):
 	"""Returns whether the team had a corner"""
@@ -625,11 +687,30 @@ def is_self_corner(event_list, team):
 			
 	return is_self_corner
 
-def is_interception(event_list, team):
+def is_oppo_interception(event_list, team):
 	"""Returns whether the opponent intercepted the ball"""
 	is_true = False
 	for e in event_list[:1]:
 		if e.type_id == 8 and e.team != team:
+			is_true = True
+
+	return is_true
+
+def is_self_interception(event_list, team):
+	"""Returns whether the self team intercepted the ball"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 8 and e.team == team:
+			is_true = True
+
+	return is_true
+
+
+def is_post(event_list, team):
+	"""Returns whether the self team shot off post"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 14 and e.team == team:
 			is_true = True
 
 	return is_true
@@ -642,6 +723,58 @@ def is_blocked_pass(event_list, team):
 			is_true = True
 
 	return is_true
+
+def is_gk_claim(event_list, team):
+	"""Returns whether the opponent GK claimed the ball"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 11 and e.team != team:
+			is_true = True
+
+	return is_true
+
+def is_card_and_foul(event_list, team):
+	"""Returns whether the opponent fouled"""
+	is_foul = False
+	is_card = False
+	for e in event_list[:2]:
+		if e.type_id == 17 and e.team != team:
+			is_card = True
+		elif e.type_id == 4 and e.team != team:
+			is_foul = True
+
+	return is_card and is_foul
+
+def is_pk(event_list, team):
+	"""Returns if there is a PK"""
+	is_true = False
+	for e in event_list[:1]:
+		if e.type_id == 58 and e.team != team:
+			is_true = True
+
+	return is_true
+
+
+def is_foul_on_opponent(event_list, team):
+	"""Returns foul on opponent"""
+	is_foul = False
+	is_foul_pt2 = False
+
+	for e in event_list[:2]:
+		if e.type_id == 4 and e.outcome == 0 and e.team != team:
+			is_foul = True
+		elif e.type_id == 4 and e.outcome == 1 and e.team == team:
+			is_foul_pt2 = True
+	return is_foul and is_foul_pt2
+
+def is_delayed_game(event_list, team):
+	"""Looks further back due to paused game"""
+	is_delayed = False
+	for e in event_list[:2]:
+		if e.type_id == 28:
+			is_delayed = True
+
+	return is_delayed
 
 def event_translator(event, include_event=False):
 	"""Uses logic of below for just an individual event"""
@@ -684,10 +817,38 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 		return "Oppo. Pass"
 	elif is_self_corner(backtracked_events, key_event_team):
 		return "Attacking Corner"
-	elif is_interception(backtracked_events, key_event_team):
+	elif is_oppo_interception(backtracked_events, key_event_team):
 		return "Oppo. Interception"
+	elif is_self_interception(backtracked_events, key_event_team):
+		return "Interception"
 	elif is_blocked_pass(backtracked_events, key_event_team):
 		return "Oppo. Blocked Pass"
+	elif is_card_and_foul(backtracked_events, key_event_team):
+		return "Oppo. Foul + Card -> Free Kick"
+	elif is_foul_on_opponent(backtracked_events, key_event_team):
+		return "Oppo. Foul -> Free Kick"
+	elif is_gk_claim(backtracked_events, key_event_team):
+		passes = get_pass_chain_count(backtracked_events[0], oppo_team_event=True)
+		if passes == 0:
+			return "Oppo. GK Claim"
+		else:
+			return "%s passes + Oppo. GK Claim" % (passes)
+	elif is_oppo_tackle_and_self_dispossessed(backtracked_events, key_event_team):
+		return "Oppo. Tackle and Self Dispossessed"	
+	elif is_self_tackle_and_oppo_dispossessed(backtracked_events, key_event_team):
+		return "Self Tackle and Oppo. Dispossessed"	
+	elif is_pk(backtracked_events, key_event_team):
+		return "Penalty Kick"
+	elif is_missed_shot(backtracked_events, key_event_team):
+		return "Missed Shot"
+	elif is_self_saved(backtracked_events, key_event_team):
+		return "Shot Saved"
+	elif is_tackle(backtracked_events, key_event_team):
+		return "Oppo. Tackle"
+	elif is_delayed_game(backtracked_events, key_event_team):
+		return "Delayed Game"
+	elif is_post(backtracked_events, key_event_team):
+		return "Shot off post"
 	else:
 		print "Uhoh..."
 		print backtracked_events
@@ -725,24 +886,37 @@ def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 
 	return desired_events
 
-def get_pass_chain_count(input_event, include_event=False):
+def get_pass_chain_count(input_event, include_event=False, oppo_team_event=False):
 	"""Given a single event, look at the last minute of events 
 	in reverse order (i.e. last to first) and find the number of passes 
 	leading up to the single input event"""
 	backtracked = backtrack(input_event, include_event=include_event)
 
 	pass_count = 0
-	for item in backtracked:
-		#if it's the same team's pass event, count it
-		if item.type_id == 1 and item.team == input_event.team:
-			pass_count += 1
-		#if it's the same team's loose ball recovery, don't break out of the chain
-		elif item.type_id == 49 and item.team == input_event.team:
-			continue
-		#if it's anything else, end the pass count chain
-		else:
-			break
-
+	#for when the input into get_pass_chain_count is a self-team event
+	if not oppo_team_event:
+		for item in backtracked:
+			#if it's the same team's pass event, count it
+			if item.type_id == 1 and item.team == input_event.team:
+				pass_count += 1
+			#if it's the same team's loose ball recovery, don't break out of the chain
+			elif item.type_id == 49 and item.team == input_event.team:
+				continue
+			#if it's anything else, end the pass count chain
+			else:
+				break
+	#for when the input into get_pass_chain_count is an opponent-team event
+	else:
+		for item in backtracked:
+			#if it's the not oppo-team's pass event, count it
+			if item.type_id == 1 and item.team != input_event.team:
+				pass_count += 1
+			#if it's the not oppo-team's loose ball recovery, don't break out of the chain
+			elif item.type_id == 49 and item.team != input_event.team:
+				continue
+			#if it's anything else, end the pass count chain
+			else:
+				break
 	return pass_count
 
 def parse_backtrack(key_event, list_of_events):
