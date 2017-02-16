@@ -922,7 +922,7 @@ def get_pass_chain_count(input_event, include_event=False, oppo_team_event=False
 def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event
-	print "key_event = " +str(key_event)
+	# print "key_event = " +str(key_event)
 	#print list_of_events
 	key_event_team = key_event.team
 	related_event_id = find_related_event(key_event) 
@@ -938,31 +938,33 @@ def parse_backtrack(key_event, list_of_events):
 			between_events = list_of_events[0:index]
 
 	if related_event and between_events:
-		print "parse option 1) Related event; events between"
+		# print "parse option 1) Related event; events between"
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
-			print "- %s + %s" % (event_translator(related_event, include_event=True), event_translator_eventlist(between_events, key_event_team)) 
-			print "    NOTE: events do exist between related event & shot"
+			print "^ %s + %s ^ %s" % (event_translator(related_event, include_event=True) \
+						, event_translator_eventlist(between_events, key_event_team) \
+						, is_inside_box(key_event))
+			# print "    NOTE: events do exist between related event & shot"
 		else:
-			print "- %s passes + %s" % (pass_count, event_translator_eventlist(between_events, key_event_team))
-			print "    NOTE: events do exist between related event & shot"
+			print "^ %s passes + %s ^ %s" % (pass_count, event_translator_eventlist(between_events, key_event_team),is_inside_box(key_event))
+			# print "    NOTE: events do exist between related event & shot"
 
 	elif related_event and not between_events:
-		print "parse option 2) Related event; no events between"
+		# print "parse option 2) Related event; no events between"
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		if pass_count == 0:
-			print "- %s" % (event_translator(related_event, include_event=True))
-			print related_event
-			print "    NOTE: events do not exist between related event & shot"
+			print "^ %s ^ %s" % (event_translator(related_event, include_event=True), is_inside_box(key_event))
+			# print related_event
+			# print "    NOTE: events do not exist between related event & shot"
 		else:
-			print "- %s passes " % (pass_count)
-			print "    NOTE: events do not exist between related event & shot"
+			print "^ %s passes ^ %s" % (pass_count, is_inside_box(key_event))
+			# print "    NOTE: events do not exist between related event & shot"
 
 	else:
-		print "parse option 3) No related event"
+		# print "parse option 3) No related event"
 		pass_count = get_pass_chain_count(key_event)
 		if pass_count == 0:
-			print "- " + event_translator(key_event)
-			print "    NOTE: no related event"
+			print "^ %s ^ %s" % (event_translator(key_event), is_inside_box(key_event))
+			# print "    NOTE: no related event"
 		else:
-			print "- %s passes (no assigned related event)" % (pass_count)
+			print "^ %s passes (no assigned, related event) ^ %s" % (pass_count, is_inside_box(key_event))

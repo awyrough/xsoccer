@@ -81,11 +81,12 @@ class Command(BaseCommand):
 		team_games = ua.team_list_games(db_team, arg_start_date, arg_end_date)
 
 		for game in team_games:
-			print "\nAnalyzing Passes for %s in %s" % (db_team, str(game))
+			# print "\nAnalyzing Passes for %s in %s" % (db_team, str(game))
 			
 			for item in uf24.identify_shots(game, db_team):
 				#print item
-				print "\n"
+				# print "\n"
+				
 				# print "start: backtrack function"
 				backtracked = uf24.backtrack(item)
 				# for i in backtracked:
