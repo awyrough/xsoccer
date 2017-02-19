@@ -800,6 +800,8 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 	if is_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel"
 	elif is_gk_save(backtracked_events, key_event_team):
+		# print backtracked_events
+		# print backtracked_events[0].game
 		return "Oppo. GK Save"
 	elif is_gk_save_and_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel + Oppo. GK Save"
@@ -868,16 +870,12 @@ def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 	ref_minute = key_event.minute
 	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
 	desired_events = []
-	# print "<<<< start: backtrack"
-	# print "key_event = " + str(key_event)
-	# print ref_minute
-	# print ref_minute-mins
-	# print mins
-	# print game
-	# for e in events: print e
-	# print ">>>>> end: backtrack"
+	# print ">>>>> backtrack"
 
+	# print "key_event = " + str(key_event)
+	# print ""
 	for e in events:
+		# print e
 		if e.uuid == key_event.uuid:
 			#include this if we want the key_event included at end of list
 			if include_event:
@@ -897,6 +895,8 @@ def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 	if is_reversed:
 		desired_events.reverse()
 
+	# print desired_events
+	# print "<<<<<<< end backtrack"
 	return desired_events
 
 def get_pass_chain_count(input_event, include_event=False, oppo_team_event=False):
