@@ -776,6 +776,18 @@ def is_delayed_game(event_list, team):
 
 	return is_delayed
 
+def is_GKsave_same_min_and_sec(event_stat_1, key_event_stat):
+	"""Returns true if the two events are exact same game minute / second"""
+	min_1 = event_stat_1.minute
+	sec_1 = event_stat_1.second
+	min_key = key_event_stat.minute
+	sec_key = key_event_stat.second
+
+	event_stat_1.type_id
+
+	return min_1 == min_key and sec_1 == sec_key and event_stat_1.type_id == 10
+
+
 def event_translator(event, include_event=False):
 	"""Uses logic of below, but just an individual event by backtracking"""
 	backtracked_events = backtrack(event, include_event=include_event)
@@ -871,7 +883,12 @@ def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 			if include_event:
 				desired_events.append(e) 
 			break
-		#else, if event is type_id = 43 = deleted event
+		#else, ignore if event is a GK save and is at the exact same minute / second
+		#note.. this would only kick out events listed before the shot, as the break 
+		#above wouldn't allow those after to be considered 
+		elif is_GKsave_same_min_and_sec(e, key_event):
+			continue
+		#else, ignore if event is type_id = 43 = deleted event
 		elif is_type_id(e, 43): 
 			continue
 		else:
@@ -919,6 +936,7 @@ def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event using Opta Qualifiers
 	key_event_team = key_event.team
+	key_event_type_id = key_event.type_id
 	related_event_id = find_related_event(key_event) 
 	related_event = None
 	between_events = None
@@ -981,4 +999,4 @@ def parse_backtrack(key_event, list_of_events):
 		else:
 			output = "%s passes, %s" % (pass_count, shot_inside_box)
 
-	print output
+	print output + ", type_id = " + str(key_event_type_id)
