@@ -1,4 +1,5 @@
-# functions centered around f24 analysis
+# WHEN I WAS FIGURING OUT THE WEIRD GK SAVE THING AND GOT STUCK.....
+
 
 import time
 import datetime 
@@ -63,7 +64,7 @@ def is_qualifier_id(instance, qualifierID):
 
 def pass_elements(event_stat):
 	"""Pull pass elements out of an EventStatistic and it's associated Qualifiers"""
-	if not is_type_id(event_stat, 1):
+	if is_type_id(event_stat, 1):
 		raise Exception("%s is not a passing event" % (event_stat))
 
 	player = event_stat.player
@@ -211,7 +212,7 @@ def pass_chain_diagnostics(pass_chain, ignore_singles=False):
 	return [pass_chain_elements,player_sequence,net_coordinates,coordinates,distance(net_coordinates),x_distance(net_coordinates),total_distance,num_passes,chain_start_seconds,elapsed_time,position_sequence]
 
 
-def game_diagnostics(game, team, ignore_singles=True):
+def game_diagnostics(game, team, ignore_singles=False):
 	"""Input a game, team and note if you want to ignore single-passes..
 	
 	will pull all pass chain diagnostics in that game and return a list of lists"""
@@ -236,7 +237,7 @@ def game_diagnostics(game, team, ignore_singles=True):
 	#pull statistics on passing chains
 	game_diagnostics = []
 	for chain in pass_chains:
-		pass_chain_diagnostic_results = pass_chain_diagnostics(chain, ignore_singles=ignore_singles)
+		pass_chain_diagnostic_results = pass_chain_diagnostics(chain, ignore_singles=True)
 		
 		#ignore sequences that are unrealistically short, as this is a data collection error
 		if pass_chain_diagnostic_results and pass_chain_diagnostic_results[9] >= 0.1:
@@ -353,7 +354,6 @@ def to_csv_single_gameteam_stats(game_diagnostics, team, game):
 		#7 num_passes
 		#8 chain_start_seconds
 		#9 elapsed_time
-		#10 player position sequence
 	for diagnostics in game_diagnostics:
 		r = []
 		r += [game_date]
@@ -372,74 +372,7 @@ def to_csv_single_gameteam_stats(game_diagnostics, team, game):
 
 	output.close()
 
-def to_csv_timeperiod_team_passing_stats(team, game_list, textstring):
-	"""
-	To be run when we want to save to csv a single team's pass statistics over the course of a set of games
-	
-	#Diagnostic legend:
-		#0 pass_chain_elements
-		#1 player_sequence
-		#2 net_coordinates
-		#3 coordinates
-		#4 distance(net_coordinates)
-		#5 x_distance(net_coordinates)
-		#6 total_distance
-		#7 num_passes
-		#8 chain_start_seconds
-		#9 elapsed_time
-		#10 player position sequence
-	"""
-	os.chdir("/Users/Swoboda/Desktop/analysis2redo/")
-	team_uuid = team.uuid
-	output_filename = "analysis2redo" + "_" + team_uuid + textstring + ".csv"
 
-	#create header row
-	header = []
-	header += ["Date"]
-	header += ["Game ID"]
-	header += ["Game"]
-	header += ["Team ID"]
-	header += ["Team"]
-	header += ["Game_Minutes"]
-	header += ["Pass_Count"]
-	header += ["Total Distance"]
-	header += ["Net X Distance"]
-	header += ["Player Position Sequence"]
-	header += ["Elapsed_Time"]
-	header += ["Tempo"]
-	header += ["Total_Velocity"]
-	header += ["Vertical_Velocity"]
-
-	output = open(output_filename, "a")
-	writer = csv.writer(output, lineterminator="\n")
-
-	writer.writerow(header)
-
-	for g in game_list:
-		game_uuid = g.uuid
-		game_date = g.date
-
-		g_diagnostics = game_diagnostics(g, team)
-		for diagnostics in g_diagnostics:
-			r = []
-			r += [game_date]
-			r += [game_uuid]
-			r += [str(g)]
-			r += [team_uuid]
-			r += [str(team)]
-			r += [seconds_to_game_time(diagnostics[8],"float")]
-			r += [diagnostics[7]]
-			r += [diagnostics[6]]
-			r += [diagnostics[5]]
-			r += [diagnostics[10]]
-			r += [diagnostics[9]]
-			r += [tempo_from_pass_diagnostics(diagnostics)]
-			r += [total_velocity_from_pass_diagnostics(diagnostics)]
-			r += [vertical_velocity_from_pass_diagnostics(diagnostics)]
-
-			if len(header) != len(r):
-				raise Exception("Rows you're about to print are not same dimension as header. Check this!")
-			writer.writerow(r)
 
 def to_csv_histogram(histogram_lists,team,title=""):
 	"""
@@ -526,6 +459,26 @@ def is_inside_box(event_stat):
 		if is_in_range(y, attacking_box_y[0], attacking_box_y[1]):
 			return True
 	return False
+
+def is_GKsave_same_min_and_sec(event_stat_1, event_stat_2):
+	"""Returns true if the two events are exact same game minute / second"""
+	min_1 = event_stat_1.minute
+	sec_1 = event_stat_1.second
+	min_2 = event_stat_2.minute
+	sec_2 = event_stat_2.second
+
+	event_stat_1.type_id
+
+	return min_1 == min_2 and sec_1 == sec_2 and event_stat_1.type_id != 10 and event_stat_2.type_id != 10
+
+def is_2nd_after_1st(event_stat_1, event_stat_2):
+	"""Returns true if 2nd event has a later minute / second as the first"""
+	min_1 = event_stat_1.minute
+	sec_1 = event_stat_1.second
+	min_2 = event_stat_2.minute
+	sec_2 = event_stat_2.second
+
+	return min_1 * 60 + sec_1 < min_2 * 60 + sec_2
 
 def is_event_qualifier_233(event):
 	"""Boolean of whether an event contains Qualifier 233"""
@@ -844,18 +797,6 @@ def is_delayed_game(event_list, team):
 
 	return is_delayed
 
-def is_GKsave_same_min_and_sec(event_stat_1, key_event_stat):
-	"""Returns true if the two events are exact same game minute / second"""
-	min_1 = event_stat_1.minute
-	sec_1 = event_stat_1.second
-	min_key = key_event_stat.minute
-	sec_key = key_event_stat.second
-
-	event_stat_1.type_id
-
-	return min_1 == min_key and sec_1 == sec_key and event_stat_1.type_id == 10
-
-
 def event_translator(event, include_event=False):
 	"""Uses logic of below, but just an individual event by backtracking"""
 	backtracked_events = backtrack(event, include_event=include_event)
@@ -868,8 +809,12 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 	if is_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel"
 	elif is_gk_save(backtracked_events, key_event_team):
-		# print backtracked_events
-		# print backtracked_events[0].game
+		print ""
+		print key_event_team
+		print backtracked_events[0]
+		print backtracked_events[0].game
+		print backtracked_events
+		print ""
 		return "Oppo. GK Save"
 	elif is_gk_save_and_aerial_duel(backtracked_events, key_event_team):
 		return "Aerial Duel + Oppo. GK Save"
@@ -929,6 +874,7 @@ def event_translator_eventlist(backtracked_events, key_event_team):
 		return "Shot off post"
 	else:
 		print "Uhoh..."
+		print backtracked_events[0].game
 		print backtracked_events
 		raise Exception("Note: couldn't identify events in the above")
 
@@ -936,35 +882,66 @@ def backtrack(key_event, mins=2, is_reversed=True, include_event=False):
 	"""Given an event, backtrack "mins" through the eventfeed and return everything up to event"""
 	game = key_event.game
 	ref_minute = key_event.minute
-	events = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
+	event_stats = EventStatistic.objects.filter(game=game, minute__gte=ref_minute-mins, minute__lte=ref_minute)
+	events = []
+	for e in event_stats:
+		events.append(e)
 	desired_events = []
-	# print ">>>>> backtrack"
-
+	# print "<<<< start: backtrack"
 	# print "key_event = " + str(key_event)
-	# print ""
-	for e in events:
-		# print e
+	# print ref_minute
+	# print ref_minute-mins
+	# print mins
+	# print game
+	# for e in events: print e
+	# print ">>>>> end: backtrack"
+	print key_event
+	print events
+	# for e in events:
+	# 	#skip any event that is the exact same game minute/second (to exclude GK saves / blocks of the actual shot)	
+	# 	####if include_event == False and is_GKsave_same_min_and_sec(e, key_event):
+	# 	if is_GKsave_same_min_and_sec(e, key_event):
+	# 		print "xxx gk save"
+	# 		continue
+	# 	if is_2nd_after_1st(e, key_event):
+	# 		print "x   later event"
+	# 		continue
+	# 	#is this event the key event?
+	# 	if e.uuid == key_event.uuid:
+	# 		#include this if we want the key_event included at end of list
+	# 		if include_event:
+	# 			desired_events.append(e) 
+	# 		break
+	# 	#else, if event is type_id = 43 = deleted event
+	# 	elif is_type_id(e, 43): 
+	# 		continue
+	# 	else:
+	# 		desired_events.append(e)
+
+	for f in events:
+		#don't keep a GK save that's the same exact time as the key_event
+		if is_GKsave_same_min_and_sec(f, key_event):
+			events.remove(f)
+		#don't keep an event later than the key event
+		if is_2nd_after_1st(f, key_event):
+			events.remove(f)
+		#don't keep deleted events
+		if is_type_id(f, 43):
+			events.remove(f)
+		#is this event the key event?
 		if e.uuid == key_event.uuid:
 			#include this if we want the key_event included at end of list
-			if include_event:
-				desired_events.append(e) 
-			break
-		#else, ignore if event is a GK save and is at the exact same minute / second
-		#note.. this would only kick out events listed before the shot, as the break 
-		#above wouldn't allow those after to be considered 
-		elif is_GKsave_same_min_and_sec(e, key_event):
-			continue
-		#else, ignore if event is type_id = 43 = deleted event
-		elif is_type_id(e, 43): 
-			continue
-		else:
-			desired_events.append(e)
+			if not include_event:
+				events.remove(f) 
+
+	print "Desired below:"
 
 	if is_reversed:
-		desired_events.reverse()
+		#desired_events.reverse()
+		events.reverse()
 
-	# print desired_events
-	# print "<<<<<<< end backtrack"
+	print events
+
 	return desired_events
 
 def get_pass_chain_count(input_event, include_event=False, oppo_team_event=False):
@@ -1004,7 +981,6 @@ def parse_backtrack(key_event, list_of_events):
 	"""Given a backtracked list of events, prior to a key event, what is the cause?"""
 	#check if there is an event tied to the key event using Opta Qualifiers
 	key_event_team = key_event.team
-	key_event_type_id = key_event.type_id
 	related_event_id = find_related_event(key_event) 
 	related_event = None
 	between_events = None
@@ -1023,13 +999,13 @@ def parse_backtrack(key_event, list_of_events):
 
 	#if there's a related event and between events
 	if related_event and between_events:
+		print "type 1"
 		#are there passes leading up to related event?
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		#if not, identify what happened before the related event
 		if pass_count == 0:
 			leadup_related_event = event_translator(related_event, include_event=True)
 			leadup_between_events = event_translator_eventlist(between_events, key_event_team)
-			
 			
 			output = "%s then %s, %s" % (leadup_related_event, leadup_between_events, shot_inside_box)
 		#if so, count those passes and then identify the events between
@@ -1043,6 +1019,7 @@ def parse_backtrack(key_event, list_of_events):
 			output = "%s passes then %s, %s" % (pass_count, leadup_between_events, shot_inside_box)
 	#if there's a related event but nothing between it and the key event
 	elif related_event and not between_events:
+		print "type 2"
 		#are there passes leading up to related event?
 		pass_count = get_pass_chain_count(related_event, include_event=True)
 		#if no passes, identify what happened before the related event
@@ -1056,6 +1033,7 @@ def parse_backtrack(key_event, list_of_events):
 			output = "%s passes, %s" % (pass_count, is_inside_box(key_event))
 	#else, there no related event (and thus no between event)
 	else:
+		print "type 3"
 		#are there passes leading up to key event?
 		pass_count = get_pass_chain_count(key_event)
 		if pass_count == 0:
@@ -1067,4 +1045,4 @@ def parse_backtrack(key_event, list_of_events):
 		else:
 			output = "%s passes, %s" % (pass_count, shot_inside_box)
 
-	print output + ", type_id = " + str(key_event_type_id)
+	print output
