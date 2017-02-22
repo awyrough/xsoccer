@@ -3,7 +3,6 @@ Objectives:
 - Which players pass together the most?
 - What types of position combintations are most frequent in pass-sequences?
 """
-
 """
 Sample Run Script: python manage.py analysis3 --team_uuid="t1326" --print_to_csv
 
