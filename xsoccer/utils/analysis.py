@@ -45,10 +45,13 @@ def player_list_games(player, start_date, end_date):
 	games = []
 
 	for l in Lineup.objects.filter(player=player):
-		if l.game.date >= start_date and l.game.date <= end_date:
+		# print l.game.date
+		# print start_date.date()
+		# print end_date.date()
+		if l.game.date >= start_date.date() and l.game.date <= end_date.date():
 			games.append(l.game)
 
-	return games
+	return sorted(games, key=lambda x: x.date)
 
 def player_game_stats(player, game):
 	"""Return all PlayerStatistics for a Player and Game"""
@@ -97,7 +100,7 @@ def team_list_games(team, start_date, end_date):
 				| Game.objects.filter(away_team=team, date__range=[start_date,end_date]):
 		games.append(g)
 
-	return games
+	return sorted(games, key=lambda x: x.date)
 
 def team_game_stats(team, game):
 	"""Return all TeamStatistics for a Team and Game"""

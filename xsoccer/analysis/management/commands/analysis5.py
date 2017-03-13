@@ -35,12 +35,12 @@ class Command(BaseCommand):
 
 	def add_arguments(self,parser):
 		# add optional print to csv flag
-		parser.add_argument(
-			"--team_uuid",
-            dest="team_uuid",
-            default="",
-            help="Desried Opta team ID",
-            )
+		# parser.add_argument(
+		# 	"--team_uuid",
+  #           dest="team_uuid",
+  #           default="",
+  #           help="Desried Opta team ID",
+  #           )
 		parser.add_argument(
 			"--print_to_csv",
 			action="store_true",
@@ -48,48 +48,54 @@ class Command(BaseCommand):
             default=False,
             help="save file?",
             )
-		parser.add_argument(
-			"--start_date",
-            dest="start_date",
-            default='1900-01-01',
-            help="Example format: 1900-01-31",
-            )
-		parser.add_argument(
-			"--end_date",
-            dest="end_date",
-            default='2900-01-01',
-            help="Example format: 1900-01-31",
-            )
+		# parser.add_argument(
+		# 	"--start_date",
+  #           dest="start_date",
+  #           default='1900-01-01',
+  #           help="Example format: 1900-01-31",
+  #           )
+		# parser.add_argument(
+		# 	"--end_date",
+  #           dest="end_date",
+  #           default='2900-01-01',
+  #           help="Example format: 1900-01-31",
+  #           )
 	def handle(self,*args,**options):
 		#handle import parameters
-		if not options["team_uuid"]:
-			raise Exception("Opta team ID is needed")
+
+		# if not options["team_uuid"]:
+		# 	raise Exception("Opta team ID is needed")
 		is_print_to_csv = options["print_to_csv"]
-		arg_team_uuid = str(options["team_uuid"])
-		arg_start_date = str(options["start_date"])
-		arg_end_date = str(options["end_date"])
+		# arg_team_uuid = str(options["team_uuid"])
+		# arg_start_date = str(options["start_date"])
+		# arg_end_date = str(options["end_date"])
 		
-		arg_start_date = datetime.datetime.strptime(arg_start_date, "%Y-%m-%d")
-		arg_end_date = datetime.datetime.strptime(arg_end_date, "%Y-%m-%d")
+		arg_player_uuid = "p116661"
 
-		#load team
-		db_team = Team.objects.get(uuid=arg_team_uuid)
+		#time period 1
+		arg_tp1_start = datetime.datetime.strptime("2015-01-01", "%Y-%m-%d")
+		arg_tp1_end = datetime.datetime.strptime("2016-07-01", "%Y-%m-%d")
+		#time period 2
+		arg_tp2_start = datetime.datetime.strptime("2016-07-01", "%Y-%m-%d")
+		arg_tp2_end = datetime.datetime.strptime("2016-11-01", "%Y-%m-%d")
 
-		#pull list of games tied to the team
-		team_games = ua.team_list_games(db_team, arg_start_date, arg_end_date)
+		#load player
+		db_player = Player.objects.get(uuid=arg_player_uuid)
 
-		for game in team_games:
-			# print "\nAnalyzing Passes for %s in %s" % (db_team, str(game))
+		#pull list of games tied to the player
+		tp1_games = ua.player_list_games(db_player, arg_tp1_start, arg_tp1_end)
+		tp2_games = ua.player_list_games(db_player, arg_tp2_start, arg_tp2_end)
+
+		print "\nBaseline Time Period"
+		print "%s to %s" % (arg_tp1_start, arg_tp1_end)
+		print "%s games" % (len(tp1_games))
+
+		print "\nAnalysis Time Period"
+		print "%s to %s" % (arg_tp2_start, arg_tp2_end)
+		print "%s games" % (len(tp2_games))
+		# for game in tp1_games:
+		# 	print game
+		# for game in tp2_games:
+		# 	print game
+
 			
-			for item in uf24.identify_shots(game, db_team):
-				#print item
-				# print "\n"
-				
-				# print "start: backtrack function"
-				backtracked = uf24.backtrack(item)
-				# for i in backtracked:
-				# 	print "   " + str(i)
-				# print "end: backtrack function"
-				# print "start: parse backtrack"
-				uf24.parse_backtrack(item, backtracked)
-				# print "end: parse backtrack"
