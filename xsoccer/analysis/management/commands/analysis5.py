@@ -1,16 +1,13 @@
 """
 Objectives:
-- Which players pass together the most?
-- What types of position combintations are most frequent in pass-sequences?
+- How does a player in time period 2 compare to himself in time period 1?
 """
 
 """
-Sample Run Script: python manage.py analysis3 --team_uuid="t1326" 
-					--print_to_csv
+Sample Run Script: python manage.py analysis5 --print_to_csv
 
-					python manage.py analysis4 --team_uuid="t1326"  --start_date="2016-07-01"
-					python manage.py analysis4 --team_uuid="t1326"  --start_date="2016-01-01" --end_date="2016-07-01"
 """
+
 import datetime
 import csv
 import os
@@ -31,6 +28,7 @@ from venues.models import Venue
 
 import utils.analysis as ua
 import utils.f24_analysis as uf24
+import utils.f9_analysis as uf9
 
 class Command(BaseCommand):
 	help = 'Pull the statistics of a team across a time-range; classify by outcome'
