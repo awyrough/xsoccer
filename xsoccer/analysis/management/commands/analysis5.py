@@ -29,6 +29,7 @@ from venues.models import Venue
 import utils.analysis as ua
 import utils.f24_analysis as uf24
 import utils.f9_analysis as uf9
+import utils.stats as us
 
 class Command(BaseCommand):
 	help = 'Pull the statistics of a team across a time-range; classify by outcome'
@@ -93,9 +94,30 @@ class Command(BaseCommand):
 		print "\nAnalysis Time Period"
 		print "%s to %s" % (arg_tp2_start, arg_tp2_end)
 		print "%s games" % (len(tp2_games))
+		print "\n"
 		# for game in tp1_games:
 		# 	print game
 		# for game in tp2_games:
 		# 	print game
 
+		KPIs = [
+		"fwd_pass"
+		,"shot_off_target"
+		,"goals"
+		]
+
+		for kpi in KPIs:
+			print kpi
+			tp1_kpis = uf9.gameset_player_stat_values(db_player, tp1_games, kpi)
+			tp2_kpis = uf9.gameset_player_stat_values(db_player, tp2_games, kpi)
+			print us.welchs_ttest(tp1_kpis, tp2_kpis)
+			print ""
+
+		"""
+		TODO next:
+			1) Pull KPIs per game for the db_player
+			2) Store KPIs
+			3) Build a z-score test 
+			4) Export to R-readable format
+		"""
 			

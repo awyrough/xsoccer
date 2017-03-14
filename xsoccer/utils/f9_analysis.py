@@ -22,6 +22,62 @@ from venues.models import Venue
 
 import utils.analysis as ua
 
+"""Explicitly Written"""
+def player_stat(player, game, statistic):
+	"""Simply return the QuerySet tied to a player, game, and statistic
+	Value of creating this more manual step is so that we check if there 
+	is more than one QuerySet returning
+	"""
+	player_stat = PlayerStatistic.objects.filter(game=game, player=player, statistic=statistic)
+
+	if len(player_stat) > 1:
+		print player_stat
+		raise Exception("This should not return multiple values: %s" % (player_stat))
+
+	return player_stat
+
+def player_stat_value_per90(player, game, statistic):
+	"""For a given player and game, return the KPI of interest on a per-90 minute basis"""
+	p_stat = player_stat(player, game, statistic)
+	p_stat_value = None
+
+	if len(p_stat) == 0: #if no metric for this game, return nothing
+		p_stat_value = 0 
+	else:
+		p_stat_value = p_stat[0].value
+
+	time_played = player_stat(player, game, "mins_played")
+
+	returned_value = None
+	
+	if len(time_played) == 0:
+		returned_value = None
+	elif time_played[0].value == 0: #if player didn't play this game, return nothing
+		if p_stat_value != 0:
+			print "Shouldn't have non-zero value if player didn't play in game. %s mins; %s; %s value" % (time_played[0].value, p_stat, p_stat_value)
+			raise Exception("")
+		returned_value = None
+	elif time_played[0].value > 0 and p_stat_value == 0:
+		returned_value = 0
+	else:
+		returned_value = float(p_stat_value) / (time_played[0].value / 90.0)
+
+	return returned_value
+
+def gameset_player_stat_values(player, game_list, statistic):
+	"""For a set of games and a given player, return the KPI's of interest"""
+	values = []
+	for game in game_list:
+		v = player_stat_value_per90(player, game, statistic)
+		if v >= 0:
+			values.append(v)
+
+	return values
+
+"""Leftover from f24_analysis"""
+
+
+
 def is_type_id(instance, typeID):
 	if instance.type_id == typeID:
 		return instance
