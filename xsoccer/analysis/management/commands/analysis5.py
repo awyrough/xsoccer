@@ -161,7 +161,8 @@ class Command(BaseCommand):
 		for p in arg_cp_uuid:
 			db_c_players.append(Player.objects.get(uuid=p))
 
-		print "\nInterest:"
+		print "\nSUMMARY"
+		print "Interst:"
 		print "%s" % (db_i_player)
 		print "%s to %s" % (itp_start, itp_end)
 
@@ -170,31 +171,23 @@ class Command(BaseCommand):
 		for p in db_c_players:
 			print "\t%s" % (p)
 		print "%s to %s" % (ctp_start, ctp_end)
-		print "\n"
+		print "---------------\n"
 
 		#Pull Interest Period Information
 		interest_values = uf9.timeframe_player_stat_list_values(db_i_player, itp_start, itp_end, KPIs)
 		print "INTEREST VALUES"
-		print interest_values
-		# for key, value in interest_values:
-		# 	print key
-		# 	print value
+		for key in interest_values:
+			print key
+			print "  %s \n\t%s" % (db_i_player, interest_values[key])
 
+				
 		#Pull Comparison Period Information
 		comparison_values = uf9.timeframe_player_list_stat_list_values(db_c_players, ctp_start, ctp_end, KPIs)
-		print "COMPARISON VALUES"
-		print comparison_values
-		# for key in comparison_values:
-		# 	print key
-		# 	for k, v in comparison_values[key]:
-		# 		print "%s \t %s" % (k, v)
+		print "\nCOMPARISON VALUES"
+		for key in comparison_values:
+			print key
+			for k in comparison_values[key]:
+				print "  %s \n\t%s" % (k, comparison_values[key][k])
 
-		"""
-		TODO next:
-			0) make it possible to do aggregated F9 metrics (i.e. shots on and off target + goals)
-			1) Export to R-readable format
-			2) Write command-line import logic to customize to any player / timeframe
-			3) Validate manually (?)
-			4) Build out related analysis 6?
-		"""
+		print "---------------\n"
 			
