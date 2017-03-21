@@ -71,53 +71,68 @@ class Command(BaseCommand):
 		# arg_start_date = str(options["start_date"])
 		# arg_end_date = str(options["end_date"])
 		
-		arg_player_uuid = "p116661"
-
-		#time period 1
-		arg_tp1_start = datetime.datetime.strptime("2015-01-01", "%Y-%m-%d")
-		arg_tp1_end = datetime.datetime.strptime("2016-07-01", "%Y-%m-%d")
-		#time period 2
-		arg_tp2_start = datetime.datetime.strptime("2016-07-01", "%Y-%m-%d")
-		arg_tp2_end = datetime.datetime.strptime("2016-11-01", "%Y-%m-%d")
-
-		#load player
-		db_player = Player.objects.get(uuid=arg_player_uuid)
-
-		#pull list of games tied to the player
-		tp1_games = ua.player_list_games(db_player, arg_tp1_start, arg_tp1_end)
-		tp2_games = ua.player_list_games(db_player, arg_tp2_start, arg_tp2_end)
-
-		print "\nBaseline Time Period"
-		print "%s to %s" % (arg_tp1_start, arg_tp1_end)
-		print "%s games" % (len(tp1_games))
-
-		print "\nAnalysis Time Period"
-		print "%s to %s" % (arg_tp2_start, arg_tp2_end)
-		print "%s games" % (len(tp2_games))
-		print "\n"
-		# for game in tp1_games:
-		# 	print game
-		# for game in tp2_games:
-		# 	print game
-
+		#KPIs of interest
 		KPIs = [
-		"fwd_pass"
-		,"shot_off_target"
-		,"goals"
+		"goals"
 		]
 
-		for kpi in KPIs:
-			print kpi
-			tp1_kpis = uf9.gameset_player_stat_values(db_player, tp1_games, kpi)
-			tp2_kpis = uf9.gameset_player_stat_values(db_player, tp2_games, kpi)
-			print us.welchs_ttest(tp1_kpis, tp2_kpis)
-			print ""
+		#interest player
+		arg_ip_uuid = "p116661"
+
+		#interest time period
+		itp_start = datetime.datetime.strptime("2016-10-01", "%Y-%m-%d")
+		itp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
+		
+		#comparison type
+		comparison_type = "Individual Player Analysis"
+
+		#comparison player list
+		arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
+
+		#comparison time period
+		ctp_start = datetime.datetime.strptime("2016-10-01", "%Y-%m-%d")
+		ctp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
+
+		#load players
+		db_i_player = Player.objects.get(uuid=arg_ip_uuid)
+		db_c_players = []
+		for p in arg_cp_uuid:
+			db_c_players.append(Player.objects.get(uuid=p))
+
+		print "\nInterest:"
+		print "%s" % (db_i_player)
+		print "%s to %s" % (itp_start, itp_end)
+
+		print "\nComparison:"
+		print "Type = %s" % (comparison_type) 
+		for p in db_c_players:
+			print "\t%s" % (p)
+		print "%s to %s" % (ctp_start, ctp_end)
+		print "\n"
+
+		#Pull Interest Period Information
+		interest_values = uf9.timeframe_player_stat_list_values(db_i_player, itp_start, itp_end, KPIs)
+		print "INTEREST VALUES"
+		print interest_values
+		# for key, value in interest_values:
+		# 	print key
+		# 	print value
+
+		#Pull Comparison Period Information
+		comparison_values = uf9.timeframe_player_list_stat_list_values(db_c_players, ctp_start, ctp_end, KPIs)
+		print "COMPARISON VALUES"
+		print comparison_values
+		# for key in comparison_values:
+		# 	print key
+		# 	for k, v in comparison_values[key]:
+		# 		print "%s \t %s" % (k, v)
 
 		"""
 		TODO next:
-			1) Pull KPIs per game for the db_player
-			2) Store KPIs
-			3) Build a z-score test 
-			4) Export to R-readable format
+			0) make it possible to do aggregated F9 metrics (i.e. shots on and off target + goals)
+			1) Export to R-readable format
+			2) Write command-line import logic to customize to any player / timeframe
+			3) Validate manually (?)
+			4) Build out related analysis 6?
 		"""
 			

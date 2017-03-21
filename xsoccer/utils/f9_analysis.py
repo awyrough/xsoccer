@@ -19,7 +19,6 @@ from teams.models import Team
 from teamstatistics.models import TeamStatistic
 from venues.models import Venue
 
-
 import utils.analysis as ua
 
 """Explicitly Written"""
@@ -49,35 +48,67 @@ def player_stat_value_per90(player, game, statistic):
 	time_played = player_stat(player, game, "mins_played")
 
 	returned_value = None
-	
+
+	#if player didn't play in the game despite being in lineup
 	if len(time_played) == 0:
 		returned_value = None
-	elif time_played[0].value == 0: #if player didn't play this game, return nothing
+	#if player is marked as playing 0 minutes this game, return nothing
+	elif time_played[0].value == 0: 
+		raise Exception("Player marked as playing in F9 file, but mins_played = 0. Should this happen?")
 		if p_stat_value != 0:
 			print "Shouldn't have non-zero value if player didn't play in game. %s mins; %s; %s value" % (time_played[0].value, p_stat, p_stat_value)
 			raise Exception("")
 		returned_value = None
-	elif time_played[0].value > 0 and p_stat_value == 0:
-		returned_value = 0
+	# COMMENTED BELOW OUT AS IT IS UNNECESSARY WITH THE ELSE STATEMENT
+	# elif time_played[0].value > 0 and p_stat_value == 0:
+	# 	returned_value = 0
 	else:
 		returned_value = float(p_stat_value) / (time_played[0].value / 90.0)
 
 	return returned_value
 
-def gameset_player_stat_values(player, game_list, statistic):
+def game_list_player_stat_values(player, game_list, statistic):
 	"""For a set of games and a given player, return the KPI's of interest"""
 	values = []
 	for game in game_list:
 		v = player_stat_value_per90(player, game, statistic)
-		if v >= 0:
+		if v >= 0: #ignore None values
 			values.append(v)
 
 	return values
 
+def timeframe_player_stat_list_values(player, start_date, end_date, stat_list):
+	"""For a timeframe between start/end dates, return dictionary of KPI values of interest"""
+	game_list = ua.player_list_games(player, start_date, end_date)
+	values = {}
+
+	for stat in stat_list:
+		values[stat] = game_list_player_stat_values(player, game_list, stat)
+
+	return values
+
+def timeframe_player_list_stat_list_values(player_list, start_date, end_date, stat_list):
+	"""For a LIST OF PLAYERS, in a given timeframe between start/end dates, 
+	return dictionary of KPI values of interest"""
+
+	game_dict = {}
+	for player in player_list:
+		game_dict[player] = ua.player_list_games(player, start_date, end_date)
+
+	kpikey_values = {}
+
+	for stat in stat_list:
+		kpikey_values[stat] = {}
+
+		for player in player_list:
+			kpikey_values[stat][player] = game_list_player_stat_values(player, game_dict[player], stat)
+
+	return kpikey_values
+
+
+
+
 """Leftover from f24_analysis"""
-
-
-
 def is_type_id(instance, typeID):
 	if instance.type_id == typeID:
 		return instance
