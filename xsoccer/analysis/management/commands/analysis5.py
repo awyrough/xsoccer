@@ -1,6 +1,68 @@
 """
-Objectives:
-- How does a player in time period 2 compare to himself in time period 1?
+Objectives / Roadmap:
+Types of analysis possible:
+- Compare player to past version of himself:
+	PoI = player
+	Interest Period = current Date range
+	Comparison Player Pool = player
+	Comparison period = past date range
+
+- Compare player to players of similar "cost":
+	PoI = player
+	interest period = date range
+	comparison player pool = players within a salary band, of the same position
+	comparison period = interest period's date range
+
+- Compare player to teammates
+	PoI = player
+	interest period = date range
+	comparison player pool = players on the team
+	comparison period = interest period's date range
+
+
+INPUTS:
+- Player of Interest
+- Comparison Player Pool
+- Interest Period (start / end dates)
+- Comparison Period (start / end dates)
+- KPIs to measure
+
+
+PROCESS:
+For Interest Period:
+	find all PoI's games 
+	for each KPI, find PoI's per90 KPI values 
+		search through game list
+		aggregate per90 KPI across all games
+		return list of all per90 data points
+
+	return dictionary of: {KPI : [list of points]} 
+
+For Comparison Period:
+	for each CP:
+		find all CP's games
+		for each KPI, find CP's avg per90 KPI
+			search through game list
+			aggregate per90 KPI across all games
+		return dictionary of {KPI : [list of points]}
+	
+	return dictionary of {KPI : {player : [list of points]}}
+
+Create lists of summary values:
+	Interest:
+		List of KPI per90 points across time period
+
+	Comparison
+		List of all player's per90 points across time period
+
+Run 2 sample T-test
+	inputs:
+		1) PoI KPI values
+		2) list of CPs KPI values
+
+OUTPUT:
+T-test showing t-score of PoI in Post Period
+
 """
 
 """
