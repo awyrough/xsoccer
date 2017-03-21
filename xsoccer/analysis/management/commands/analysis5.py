@@ -91,7 +91,7 @@ from venues.models import Venue
 import utils.analysis as ua
 import utils.f24_analysis as uf24
 import utils.f9_analysis as uf9
-import utils.stats as us
+import utils.stats as ustats
 
 class Command(BaseCommand):
 	help = 'Pull the statistics of a team across a time-range; classify by outcome'
@@ -191,3 +191,12 @@ class Command(BaseCommand):
 
 		print "---------------\n"
 			
+		for kpi in KPIs:
+			interest_data_points = interest_values[kpi]
+			print interest_data_points
+			comparison_data_points = []
+			for player in comparison_values[kpi]:
+				comparison_data_points += comparison_values[kpi][player]
+			print comparison_data_points
+
+			print ustats.welchs_ttest(comparison_data_points, interest_data_points)
