@@ -126,6 +126,7 @@ class Command(BaseCommand):
 	def handle(self,*args,**options):
 		#handle import parameters
 
+		
 		# if not options["team_uuid"]:
 		# 	raise Exception("Opta team ID is needed")
 		is_print_to_csv = options["print_to_csv"]
@@ -142,18 +143,19 @@ class Command(BaseCommand):
 		arg_ip_uuid = "p116661"
 
 		#interest time period
-		itp_start = datetime.datetime.strptime("2016-10-01", "%Y-%m-%d")
+		itp_start = datetime.datetime.strptime("2016-07-20", "%Y-%m-%d")
 		itp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
 		
 		#comparison type
 		comparison_type = "Individual Player Analysis"
 
 		#comparison player list
-		arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
+		# arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
+		arg_cp_uuid = ["p116661"]
 
 		#comparison time period
-		ctp_start = datetime.datetime.strptime("2016-10-01", "%Y-%m-%d")
-		ctp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
+		ctp_start = datetime.datetime.strptime("2015-01-01", "%Y-%m-%d")
+		ctp_end = datetime.datetime.strptime("2016-07-19", "%Y-%m-%d")
 
 		#load players
 		db_i_player = Player.objects.get(uuid=arg_ip_uuid)

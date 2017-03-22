@@ -35,7 +35,7 @@ def player_stat(player, game, statistic):
 
 	return player_stat
 
-def player_stat_value_per90(player, game, statistic):
+def player_stat_value_per90(player, game, statistic, min_playtime=9.99):
 	"""For a given player and game, return the KPI of interest on a per-90 minute basis"""
 	p_stat = player_stat(player, game, statistic)
 	p_stat_value = None
@@ -58,6 +58,9 @@ def player_stat_value_per90(player, game, statistic):
 		if p_stat_value != 0:
 			print "Shouldn't have non-zero value if player didn't play in game. %s mins; %s; %s value" % (time_played[0].value, p_stat, p_stat_value)
 			raise Exception("")
+		returned_value = None
+	#if a player didn't play long enough in a game
+	elif time_played[0].value < min_playtime:
 		returned_value = None
 	# COMMENTED BELOW OUT AS IT IS UNNECESSARY WITH THE ELSE STATEMENT
 	# elif time_played[0].value > 0 and p_stat_value == 0:
