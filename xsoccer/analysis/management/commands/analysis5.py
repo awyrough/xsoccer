@@ -136,21 +136,23 @@ class Command(BaseCommand):
 		]
 
 		#interest player
-		arg_ip_uuid = "p116661"
+		arg_ip_uuid = "p179384"
+		# mullins = "p116661"
+		# acosta = "p179384"
 
 		#interest time period
-		itp_start = datetime.datetime.strptime("2015-01-20", "%Y-%m-%d")
-		itp_end = datetime.datetime.strptime("2015-12-01", "%Y-%m-%d")
+		itp_start = datetime.datetime.strptime("2016-07-20", "%Y-%m-%d")
+		itp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
 		
 		#comparison player list
 		arg_cp_uuid = None
 		#arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
-		#arg_cp_uuid = ["p116661"]
-		queried_player_pool = Player.objects.filter(position="Striker")
+		arg_cp_uuid = ["p179384"]
+		#queried_player_pool = Player.objects.filter(position="Striker")
 
 		#comparison time period
-		ctp_start = datetime.datetime.strptime("2015-01-20", "%Y-%m-%d")
-		ctp_end = datetime.datetime.strptime("2015-12-01", "%Y-%m-%d")
+		ctp_start = datetime.datetime.strptime("2016-01-20", "%Y-%m-%d")
+		ctp_end = datetime.datetime.strptime("2016-07-19", "%Y-%m-%d")
 
 		#load players
 		db_i_player = Player.objects.get(uuid=arg_ip_uuid)
