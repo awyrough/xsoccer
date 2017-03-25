@@ -132,6 +132,7 @@ class Command(BaseCommand):
 		#KPIs of interest
 		KPIs = [
 		"goals"
+		,"d_kpi__pass_accuracy_%"
 		]
 
 		#interest player
@@ -167,7 +168,7 @@ class Command(BaseCommand):
 
 		"""Print Summary Report to Terminal"""
 		print "\nSUMMARY"
-		print "Interst:"
+		print "Interest:"
 		print "%s" % (db_i_player)
 		print "%s to %s" % (itp_start, itp_end)
 
