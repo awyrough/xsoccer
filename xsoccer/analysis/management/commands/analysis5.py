@@ -162,6 +162,10 @@ class Command(BaseCommand):
 			for p in queried_player_pool:
 				db_c_players.append(p)
 
+
+
+
+		"""Print Summary Report to Terminal"""
 		print "\nSUMMARY"
 		print "Interst:"
 		print "%s" % (db_i_player)
@@ -173,9 +177,15 @@ class Command(BaseCommand):
 		# 	print "\t%s" % (p)
 		print "%s to %s" % (ctp_start, ctp_end)
 
-		#Pull Interest Period Information
+		#Pull Interest and Comparison Period Information
 		interest_values = uf9.timeframe_player_stat_list_values(db_i_player, itp_start, itp_end, KPIs)
-		
+		comparison_values = uf9.timeframe_player_list_stat_list_values(db_c_players, ctp_start, ctp_end, KPIs)
+
+
+
+
+		"""Print Diagnostic Report to Terminal, if of interest"""
+		#Interest Period Information
 		if is_print_diagnostic:
 			print "---------------\n"
 			print "INTEREST VALUES"
@@ -183,9 +193,7 @@ class Command(BaseCommand):
 				print key
 				print "  %s \n\t%s" % (db_i_player, interest_values[key])
 
-				
-		#Pull Comparison Period Information
-		comparison_values = uf9.timeframe_player_list_stat_list_values(db_c_players, ctp_start, ctp_end, KPIs)
+		#Comparison Period Information
 		if is_print_diagnostic:
 			print "\nCOMPARISON VALUES"
 			for key in comparison_values:
@@ -193,6 +201,9 @@ class Command(BaseCommand):
 				for k in comparison_values[key]:
 					print "  %s \n\t%s" % (k, comparison_values[key][k])
 		
+
+
+		"""Calculate and Print Results Report to Terminal"""
 
 		print "\n---------------\n"
 		print "RESULTS"
