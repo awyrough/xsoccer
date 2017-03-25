@@ -126,15 +126,7 @@ class Command(BaseCommand):
 	def handle(self,*args,**options):
 		#handle import parameters
 
-
-		# if not options["team_uuid"]:
-		# 	raise Exception("Opta team ID is needed")
 		is_print_to_csv = options["print_to_csv"]
-		# arg_team_uuid = str(options["team_uuid"])
-		# arg_start_date = str(options["start_date"])
-		# arg_end_date = str(options["end_date"])
-		
-
 		is_print_diagnostic = False
 
 		#KPIs of interest
@@ -146,25 +138,29 @@ class Command(BaseCommand):
 		arg_ip_uuid = "p116661"
 
 		#interest time period
-		itp_start = datetime.datetime.strptime("2016-07-20", "%Y-%m-%d")
-		itp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
+		itp_start = datetime.datetime.strptime("2015-01-20", "%Y-%m-%d")
+		itp_end = datetime.datetime.strptime("2015-12-01", "%Y-%m-%d")
 		
-		#comparison type
-		comparison_type = "Individual Player Analysis"
-
 		#comparison player list
-		arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
+		arg_cp_uuid = None
+		#arg_cp_uuid = ["p116661", "p1710", "p18770", "p17279"]
 		#arg_cp_uuid = ["p116661"]
+		queried_player_pool = Player.objects.filter(position="Striker")
 
 		#comparison time period
-		ctp_start = datetime.datetime.strptime("2016-07-20", "%Y-%m-%d")
-		ctp_end = datetime.datetime.strptime("2016-12-01", "%Y-%m-%d")
+		ctp_start = datetime.datetime.strptime("2015-01-20", "%Y-%m-%d")
+		ctp_end = datetime.datetime.strptime("2015-12-01", "%Y-%m-%d")
 
 		#load players
 		db_i_player = Player.objects.get(uuid=arg_ip_uuid)
 		db_c_players = []
-		for p in arg_cp_uuid:
-			db_c_players.append(Player.objects.get(uuid=p))
+		#if we choose to load players via uuid strings
+		if arg_cp_uuid:
+			for p in arg_cp_uuid:
+				db_c_players.append(Player.objects.get(uuid=p))
+		elif queried_player_pool:
+			for p in queried_player_pool:
+				db_c_players.append(p)
 
 		print "\nSUMMARY"
 		print "Interst:"
@@ -172,16 +168,16 @@ class Command(BaseCommand):
 		print "%s to %s" % (itp_start, itp_end)
 
 		print "\nComparison:"
-		print "Type = %s" % (comparison_type) 
-		for p in db_c_players:
-			print "\t%s" % (p)
+		print "Viable comparison pool = %s players" % (len(db_c_players))
+		# for p in db_c_players:
+		# 	print "\t%s" % (p)
 		print "%s to %s" % (ctp_start, ctp_end)
-		print "---------------\n"
 
 		#Pull Interest Period Information
 		interest_values = uf9.timeframe_player_stat_list_values(db_i_player, itp_start, itp_end, KPIs)
 		
 		if is_print_diagnostic:
+			print "---------------\n"
 			print "INTEREST VALUES"
 			for key in interest_values:
 				print key
@@ -196,22 +192,11 @@ class Command(BaseCommand):
 				print key
 				for k in comparison_values[key]:
 					print "  %s \n\t%s" % (k, comparison_values[key][k])
-			print "---------------\n"
-			
-		for kpi in KPIs:
-			interest_data_points = interest_values[kpi]
-			#print interest_data_points
-			comparison_data_points = []
-			count = 0
-			for player in comparison_values[kpi]:
-				count += 1
-				comparison_data_points += comparison_values[kpi][player]
-			#print comparison_data_points
-			tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
+		
 
-			print "%s... %s's normalized performance:\n\t%s relative to %s player(s) in Comparison Set \
-						\n\twith %s significance \n\tgame count (interest) = %s \
-						\n\tavg game count (comparison) = %s" \
-						% (kpi, db_i_player, tstat, count, (1-signif)*100, \
-							interest_summary[1], float(comp_summary[1])/count)
+		print "\n---------------\n"
+		print "RESULTS"
+
+		#Calculate T Test and print results for each KPI 
+		uf9.kpi_ttest(KPIs, db_i_player, interest_values, comparison_values, appearance_threshold=True)
 		

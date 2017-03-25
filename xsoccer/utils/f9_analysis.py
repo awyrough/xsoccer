@@ -20,6 +20,7 @@ from teamstatistics.models import TeamStatistic
 from venues.models import Venue
 
 import utils.analysis as ua
+import utils.stats as ustats
 
 """Explicitly Written"""
 def player_stat(player, game, statistic):
@@ -107,6 +108,32 @@ def timeframe_player_list_stat_list_values(player_list, start_date, end_date, st
 			kpikey_values[stat][player] = game_list_player_stat_values(player, game_dict[player], stat)
 
 	return kpikey_values
+
+def kpi_ttest(kpi_list, db_i_player, interest_values, comparison_values, appearance_threshold=True):
+	"""For list of KPI, set of dictionary inputs, calculate and print significances per KPI"""
+	for kpi in kpi_list:
+		interest_data_points = interest_values[kpi]
+		
+		comparison_data_points = []
+		count = 0
+		for player in comparison_values[kpi]:
+			# if we want to only compare against players w/ similar game appearances as the PoI
+			if appearance_threshold:
+				if len(comparison_values[kpi][player]) >= len(interest_data_points):
+					count += 1
+					comparison_data_points += comparison_values[kpi][player]
+			# if we don't care about comparison players having a similar appearance amount
+			else:
+				count += 1
+				comparison_data_points += comparison_values[kpi][player]
+		#print comparison_data_points
+		tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
+
+		print "%s... %s's normalized performance:\n\t%s relative to %s player(s) (Appearance Threshold = %s) \
+					\n\twith %s significance \n\tgame count (interest) = %s \
+					\n\tavg game count (comparison) = %s" \
+					% (kpi, db_i_player, tstat, count, appearance_threshold, (1-signif)*100, \
+						interest_summary[1], float(comp_summary[1])/count)
 
 
 
