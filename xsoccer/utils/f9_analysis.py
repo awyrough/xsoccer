@@ -227,6 +227,8 @@ def derived_kpis():
 	,["d_kpi__leftside_pass_%", "a/b", "leftside_pass", "total_pass"]
 	,["d_kpi__rightside_pass_%", "a/b", "rightside_pass", "total_pass"]
 	,["d_kpi__long_pass_success_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
+
+	,["d_kpi__shot_accuracy_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
 	]
 	return d_kpis
 
