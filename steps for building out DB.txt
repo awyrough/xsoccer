@@ -1,3 +1,8 @@
+###########
+First with 2015 and 2016 Opta Data
+###########
+
+
 #Note: When building out the DB; everything that was printed running the commands below, was something that was successfully saved into the DB
 
 
@@ -90,4 +95,93 @@ python manage.py build_eventstatistic_table_ALL_FILES \
 #Load in game score data retroactively
 #should load 1418 values over 709 games
 python manage.py populate_game_scores_ALL_FILES --data_filepath=data/f9/
+
+
+
+
+
+
+
+
+
+###########
+Incrementally loading in 2017 data, week by week
+###########
+
+1) Copy over new 2017 GameWeek's Files into F9, F24, and F40 folders INTO THE "to_load" subdirectory
+
+        ** Note the subdirectory above **
+
+2) Store copied files into "already copied" folder in separate opta folder
+
+3) Load Teams
+
+python manage.py build_team_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+4) Load Venues
+
+#build venues from game files
+python manage.py build_venue_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+
+#build venues pt 2 (from 2017 squad info)
+python manage.py build_venue_table_v2 \
+        --data_filename=data/f40/srml-98-2017-squads.xml
+#...likely that nothing is added, as F9 files already are loaded
+
+5) Load Players (from 2017 squad info)
+
+python manage.py build_player_table \
+        --data_filename=data/f40/srml-98-2017-squads.xml
+
+
+6) Load Games
+python manage.py build_game_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+7) Load any new StatisticTypes
+python manage.py build_statistictype_table \
+        --data_filename=data/F9_Statistic_Types.csv
+
+8) Load TeamStatistics
+python manage.py build_teamstatistic_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+        Historical Load Records:
+        20170326        9845 team statistics loaded; 0.51 minutes
+
+9) Load playerStatistics
+python manage.py build_playerstatistic_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+        Historical Load Records:
+        20170326        56219 player statistics loaded; ~2 minutes (f900994 = postponed match & bad file)
+
+10) Load Lineups
+python manage.py build_lineup_table_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+        Historical Load Records:
+        20170326        1259 team statistics loaded; 0.08 minutes (f900994 = postponed match & bad file)
+
+11) Load EventStatistics and Qualifiers
+python manage.py build_eventstatistic_table_ALL_FILES \
+        --data_filepath=data/f24/to_load/
+
+        Historical Load Records:
+        20170326
+                Event                59817 statistics loaded
+                Qualifier            266119 statistics loaded; 9.92 minutes      
+
+13) Load game scores data retroactively
+python manage.py populate_game_scores_ALL_FILES \
+        --data_filepath=data/f9/to_load/
+
+        Historical Load Records:
+        20170326        70 values updated; 35 games; 0.01 minutes 
+
+
+
 
