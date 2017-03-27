@@ -63,6 +63,7 @@ class Command(BaseCommand):
         #Open up F40 and find root: <SoccerFeed>
         xml_data_root = xml_utils.get_root_from_file(data_filename)
 
+        new_player_count = 0
         # Iterate over the children within <SoccerFeed>
         for child in xml_utils.get_children(xml_data_root):
             if is_tag(child, "SoccerDocument") == False:
@@ -202,5 +203,9 @@ class Command(BaseCommand):
             
             if is_dry_run == False and player.uuid not in [u[0] for u in existing_player_uuids]:
                 player.save()
+                new_player_count += 1
                 print player
+
+        print "New Players Loaded = %s" % (new_player_count)
+
 

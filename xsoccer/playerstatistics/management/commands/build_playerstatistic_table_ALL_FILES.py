@@ -74,6 +74,10 @@ class Command(BaseCommand):
             for f in filenames:
                 file_start = time.time()
 
+                #ignore the hidden .DS_Store files
+                if f[-4:] != ".xml":
+                    continue
+
                 file_count += 1
                 file_saved_count = 0
                 
@@ -104,6 +108,10 @@ class Command(BaseCommand):
                         continue #skip if not the relevant <TeamData> child
                     
                     PlayerLineUp = xml_utils.get_tag(child, "PlayerLineUp")
+
+                    #Check if TeamData is empty (aka the game was postponed)
+                    if PlayerLineUp is None:
+                        continue
 
                     #Iterate over players on a team
                     for MatchPlayer in xml_utils.get_children(PlayerLineUp):

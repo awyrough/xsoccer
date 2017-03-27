@@ -64,6 +64,10 @@ class Command(BaseCommand):
 				xml_file = os.path.join(data_filepath, f)
 				new_games = []
 
+				#ignore the hidden .DS_Store files
+				if f[-4:] != ".xml":
+					continue
+					
 				#Open up F9 and find root: <SoccerFeed>
 				xml_data_root = xml_utils.get_root_from_file(xml_file)
 				

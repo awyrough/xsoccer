@@ -53,6 +53,7 @@ class Command(BaseCommand):
         if is_dry_run:
             print "This is a dry run and will not save any data"
 
+        new_game_count = 0
         for root_dir, sub_dirs, filenames in os.walk(data_filepath):
             for f in filenames:
                 xml_file = os.path.join(data_filepath, f)
@@ -140,5 +141,6 @@ class Command(BaseCommand):
 
                     if is_dry_run == False and game.uuid not in [u[0] for u in existing_game_uuids]:
                         game.save()
+                        new_game_count += 1
                         print game
-
+        print "New Games Saved = %s" % (new_game_count)

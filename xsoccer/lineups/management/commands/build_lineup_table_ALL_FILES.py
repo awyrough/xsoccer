@@ -65,6 +65,10 @@ class Command(BaseCommand):
             for f in filenames:
                 file_start = time.time()
 
+                #ignore the hidden .DS_Store files
+                if f[-4:] != ".xml":
+                    continue
+
                 file_count += 1
                 file_saved_count = 0
                 xml_file = os.path.join(data_filepath, f)
@@ -100,10 +104,14 @@ class Command(BaseCommand):
 
                     #Comb through <TeamData> and only pull the "formation_used" team Stat
                     team_formation = xml_utils.get_tag_and_type(team_data, "Stat", "formation_used").text
-
+                        
                     #Find the XML object <PlayerLinerUp>
                     xml_PlayerLineUp = xml_utils.get_tag(team_data, "PlayerLineUp")
 
+                    #Check if TeamData is empty (aka the game was postponed)
+                    if xml_PlayerLineUp is None:
+                        continue
+                        
                     #Iterate over players on a team
                     for xml_MatchPlayer in xml_utils.get_children(xml_PlayerLineUp):
                         #find player

@@ -9,7 +9,10 @@ def get_root_from_file(data_filename):
 
 def get_children(xml_obj):
     """Return the XML elements one level down"""
-    return [x for x in xml_obj]
+    if xml_obj is None:
+        return None
+    else:
+        return [x for x in xml_obj]
 
 def get_child_count(xml_obj, child_of_interest):
     """Return the XML elements one level down"""
