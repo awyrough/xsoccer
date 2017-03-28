@@ -74,16 +74,42 @@ def player_stat_value_per90(player, game, statistic, min_playtime=9.99):
 			else:
 				kpi_b_value = kpi_b_value[0].value
 
-			#if we're legitimately pulling 0 from the database
-			if kpi_b_value == 0:
-				raise Exception("You are dividing by 0 for this derived kpi: " + str(statistic))
 			#if the player didn't play and things are empty; give dummy value to continue with script
-			elif kpi_a_value == "empty" or kpi_b_value == "empty":
+			if kpi_a_value == "empty" or kpi_b_value == "empty":
 				p_stat_value = None
+			#if we're legitimately pulling 0 from the database
+			elif kpi_b_value == 0:
+				raise Exception("You are dividing by 0 for this derived kpi: " + str(statistic))
 			#actually calculate derived metric
 			else:
 				p_stat_value = float(kpi_a_value) / float(kpi_b_value)
 
+		elif formula == "a/(a+b)":
+			is_per90_calculation = False #for a ratio, we don't care about the time component
+
+			#KPI A
+			kpi_a_value = PlayerStatistic.objects.filter(game=game, player=player, statistic=kpi_a)
+			if len(kpi_a_value) == 0:
+				kpi_a_value = "empty"
+			else:
+				kpi_a_value = kpi_a_value[0].value
+
+			#KPI B
+			kpi_b_value = PlayerStatistic.objects.filter(game=game, player=player, statistic=kpi_b)
+			if len(kpi_b_value) == 0:
+				kpi_b_value = "empty"
+			else:
+				kpi_b_value = kpi_b_value[0].value
+
+			#if the player didn't play and things are empty; give dummy value to continue with script
+			if kpi_a_value == "empty" or kpi_b_value == "empty":
+				p_stat_value = None
+			#if we're legitimately pulling 0 from the database
+			elif float(kpi_a_value) + float(kpi_b_value) == 0:
+				raise Exception("You are dividing by 0 for this derived kpi: " + str(statistic))
+			#actually calculate derived metric
+			else:
+				p_stat_value = float(kpi_a_value) / (float(kpi_a_value) + float(kpi_b_value))
 		else:
 			raise Exception("Have not seen this derived kpi formula yet..")
 
@@ -175,7 +201,8 @@ def kpi_ttest(kpi_list, db_i_player, interest_values, comparison_values, appeara
 				comparison_data_points += comparison_values[kpi][player]
 		#print comparison_data_points
 		tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
-
+		if count == 0:
+			raise Exception("Count of players with comparison values = 0")
 		print "%s... %s's normalized performance:\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
 					\n\t   w/ %s%% statistical sig. \
 					\n\tinterest.. avg value = %s \t game count = %s \
@@ -226,9 +253,15 @@ def derived_kpis():
 	,["d_kpi__backward_pass_%", "a/b", "backward_pass", "total_pass"]
 	,["d_kpi__leftside_pass_%", "a/b", "leftside_pass", "total_pass"]
 	,["d_kpi__rightside_pass_%", "a/b", "rightside_pass", "total_pass"]
-	,["d_kpi__long_pass_success_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
-
-	,["d_kpi__shot_accuracy_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
+	,["d_kpi__long_pass_own_to_opp_success_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
+	#,["d_kpi__shot_accuracy_%", "a/b", "long_pass_own_to_opp_success", "long_pass_own_to_opp"]
+	,["d_kpi__duel_win_%", "a/(a+b)", "duel_won", "duel_lost"]
+	,["d_kpi__aerial_win_%", "a/(a+b)", "aerial_won", "aerial_lost"]
+	,["d_kpi__launch_accuracy_%", "a/b", "accurate_launches", "total_launches"]
+	,["d_kpi__long_balls_accuracy_%", "a/b", "accurate_long_balls", "total_long_pass"]
+	,["d_kpi__touches_per_pass", "a/b", "touches", "total_pass"]
+	,["d_kpi__touches_per_accurate_pass", "a/b", "touches", "accurate_pass"]
+	,["d_kpi__possession_balance", "a/b","ball_recovery","poss_lost_all"]
 	]
 	return d_kpis
 
