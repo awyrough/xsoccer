@@ -179,7 +179,7 @@ def timeframe_player_list_stat_list_values(player_list, start_date, end_date, st
 
 	return kpikey_values
 
-def kpi_ttest(kpi_list, db_i_player, interest_values, comparison_values, appearance_threshold=True):
+def kpi_ttest(kpi_list, interest_subject, interest_values, comparison_values, appearance_threshold=True):
 	"""For list of KPI, set of dictionary inputs, calculate and print significances per KPI"""
 	for kpi in kpi_list:
 		#check this KPI will work
@@ -207,10 +207,55 @@ def kpi_ttest(kpi_list, db_i_player, interest_values, comparison_values, appeara
 					\n\t   w/ %s%% statistical sig. \
 					\n\tinterest.. avg value = %s \t game count = %s \
 					\n\tcomparis.. avg value = %s \t game count = %s" \
-					% (kpi, db_i_player, round(tstat,3), count, \
+					% (kpi, interest_subject, round(tstat,3), count, \
 						appearance_threshold, round((1-signif)*100,1), \
 						interest_summary[0], float(interest_summary[1]), \
 						comp_summary[0], float(comp_summary[1])/count)
+
+def kpi_ttest_group_interest(kpi_list, interest_subject, interest_values, comparison_values, appearance_threshold=True):
+	"""For list of KPI, set of dictionary inputs, calculate and print significances per KPI"""
+	for kpi in kpi_list:
+		#check this KPI will work
+		is_valid_kpi(kpi)
+		
+		interest_data_points = []
+		i_count = 0
+		for player in interest_values[kpi]:
+			# if we want to only compare against players w/ similar game appearances as the PoI
+			if appearance_threshold:
+				if len(interest_values[kpi][player]) >= len(interest_data_points):
+					i_count += 1
+					interest_data_points += interest_values[kpi][player]
+			# if we don't care about comparison players having a similar appearance amount
+			else:
+				i_count += 1
+				interest_data_points += interest_values[kpi][player]
+
+
+		comparison_data_points = []
+		c_count = 0
+		for player in comparison_values[kpi]:
+			# if we want to only compare against players w/ similar game appearances as the PoI
+			if appearance_threshold:
+				if len(comparison_values[kpi][player]) >= len(interest_data_points):
+					c_count += 1
+					comparison_data_points += comparison_values[kpi][player]
+			# if we don't care about comparison players having a similar appearance amount
+			else:
+				c_count += 1
+				comparison_data_points += comparison_values[kpi][player]
+		#print comparison_data_points
+		tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
+		if c_count == 0:
+			raise Exception("Count of players with comparison values = 0")
+		print "%s... %s's normalized performance:\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
+					\n\t   w/ %s%% statistical sig. \
+					\n\tinterest.. avg value = %s \t game count = %s \
+					\n\tcomparis.. avg value = %s \t game count = %s" \
+					% (kpi, interest_subject, round(tstat,3), c_count, \
+						appearance_threshold, round((1-signif)*100,1), \
+						interest_summary[0], float(interest_summary[1])/i_count, \
+						comp_summary[0], float(comp_summary[1])/c_count)
 
 def is_valid_kpi(kpi):
 	"""Given a KPI name, is it valid to run analysis5 on?
