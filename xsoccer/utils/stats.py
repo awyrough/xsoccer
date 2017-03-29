@@ -10,6 +10,7 @@ from scipy import stats
 from scipy.stats import ttest_ind, ttest_1samp
 from scipy.stats.distributions import norm
 
+import warnings
 
 from eventstatistics.models import EventStatistic
 from games.models import Game
@@ -25,6 +26,8 @@ from venues.models import Venue
 def welchs_ttest(sample1, sample2):
 	"""Compute the z-score, p-value, means tied to two different samples from two different populations"""
 
+	warnings.filterwarnings('ignore')
+	
 	ttest = stats.ttest_ind(sample2, sample1)
 	
 	return ttest[0], ttest[1], (np.mean(sample1), len(sample1)), (np.mean(sample2), len(sample2))

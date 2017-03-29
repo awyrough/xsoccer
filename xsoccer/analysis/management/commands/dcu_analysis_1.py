@@ -137,13 +137,21 @@ class Command(BaseCommand):
 		,"poss_won_def_3rd"
 		,"poss_won_mid_3rd"
 		,"successful_open_play_pass"
+		,"successful_final_third_passes"
 		,"successful_put_through"
 		,"total_clearance"
 		,"total_launches"
 		,"aerial_won"
 		,"aerial_lost"
+		,"attempts_conceded_ibox"
+		,"attempts_conceded_obox"
 		,"goals_conceded"
 		,"offside_provoked"
+		,"backward_pass"
+		,"ball_recovery"
+		,"poss_lost_all"
+		,"poss_lost_ctrl"
+		,"dispossessed"
 		,"d_kpi__pass_accuracy_%"
 		,"d_kpi__blocked_pass_%"
 		,"d_kpi__forward_pass_%" 
@@ -158,13 +166,15 @@ class Command(BaseCommand):
 		,"d_kpi__touches_per_pass"
 		,"d_kpi__touches_per_accurate_pass"
 		,"d_kpi__possession_balance"
+		,"d_kpi__attempts_conceded_ibox_%"
 		]
 
 		#interest player
 		arg_ip_uuid = "p50122"
 		# mullins = "p116661"
 		# acosta = "p179384"
-		arg_ip_list_uuid = ["p110580", "p129430", "p50122", "p116656"]
+		arg_ip_list_uuid = None
+		# arg_ip_list_uuid = ["p110580", "p129430", "p50122", "p116656"] #2017 1st 3 games back 4
 
 		#interest time period
 		itp_start = datetime.datetime.strptime("2017-01-01", "%Y-%m-%d")
@@ -172,9 +182,9 @@ class Command(BaseCommand):
 		
 		#comparison player list
 		arg_cp_uuid = None
-		# arg_cp_uuid = ["p50122"] # Sean Franklin
+		arg_cp_uuid = ["p50122"] # Sean Franklin
 		# arg_cp_uuid = ["p41526"] # Bobby Boswell
-		arg_cp_uuid = ["p116656", "p129430", "p41526", "p50122"] #2016 1st 3 games back 4
+		# arg_cp_uuid = ["p116656", "p129430", "p41526", "p50122"] #2016 1st 3 games back 4
 		#queried_player_pool = Player.objects.filter(position="Striker")
 
 		#comparison time period
@@ -183,7 +193,8 @@ class Command(BaseCommand):
 
 		#load players
 		db_i_player = None
-		#db_i_player = Player.objects.get(uuid=arg_ip_uuid)
+		db_i_player = Player.objects.get(uuid=arg_ip_uuid)
+		
 		db_i_players = []
 		#if we choose to load players via uuid strings
 		if arg_ip_list_uuid:
@@ -217,7 +228,7 @@ class Command(BaseCommand):
 
 		#Pull Interest and Comparison Period Information
 		interest_values = uf9.timeframe_player_stat_list_values(db_i_player, itp_start, itp_end, KPIs)
-		interest_values_group = uf9.timeframe_player_list_stat_list_values(db_i_players, itp_start, itp_end, KPIs)
+		# interest_values_group = uf9.timeframe_player_list_stat_list_values(db_i_players, itp_start, itp_end, KPIs)
 		comparison_values = uf9.timeframe_player_list_stat_list_values(db_c_players, ctp_start, ctp_end, KPIs)
 
 
@@ -248,6 +259,6 @@ class Command(BaseCommand):
 		print "RESULTS"
 
 		#Calculate T Test and print results for each KPI 
-		uf9.kpi_ttest(KPIs, db_i_player, interest_values, comparison_values, appearance_threshold=False)
-		uf9.kpi_ttest_group_interest(KPIs, "2017 Back 4", interest_values_group, comparison_values, appearance_threshold=False)
+		uf9.kpi_ttest(KPIs, db_i_player, interest_values, comparison_values, appearance_threshold=False, long_print=False)
+		#uf9.kpi_ttest_group_interest(KPIs, "2017 Back 4", interest_values_group, comparison_values, appearance_threshold=False)
 		

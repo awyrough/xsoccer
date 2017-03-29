@@ -110,6 +110,33 @@ def player_stat_value_per90(player, game, statistic, min_playtime=9.99):
 			#actually calculate derived metric
 			else:
 				p_stat_value = float(kpi_a_value) / (float(kpi_a_value) + float(kpi_b_value))
+
+		elif formula == "a+b":
+			is_per90_calculation = True
+
+			#KPI A
+			kpi_a_value = PlayerStatistic.objects.filter(game=game, player=player, statistic=kpi_a)
+			if len(kpi_a_value) == 0:
+				kpi_a_value = "empty"
+			else:
+				kpi_a_value = kpi_a_value[0].value
+
+			#KPI B
+			kpi_b_value = PlayerStatistic.objects.filter(game=game, player=player, statistic=kpi_b)
+			if len(kpi_b_value) == 0:
+				kpi_b_value = "empty"
+			else:
+				kpi_b_value = kpi_b_value[0].value
+
+			#if the player didn't play and things are empty; give dummy value to continue with script
+			if kpi_a_value == "empty" or kpi_b_value == "empty":
+				p_stat_value = None
+			#if we're legitimately pulling 0 from the database
+			elif float(kpi_a_value) + float(kpi_b_value) == 0:
+				raise Exception("You are dividing by 0 for this derived kpi: " + str(statistic))
+			#actually calculate derived metric
+			else:
+				p_stat_value = float(kpi_a_value) + float(kpi_b_value)
 		else:
 			raise Exception("Have not seen this derived kpi formula yet..")
 
@@ -179,7 +206,7 @@ def timeframe_player_list_stat_list_values(player_list, start_date, end_date, st
 
 	return kpikey_values
 
-def kpi_ttest(kpi_list, interest_subject, interest_values, comparison_values, appearance_threshold=True):
+def kpi_ttest(kpi_list, interest_subject, interest_values, comparison_values, appearance_threshold=True, long_print=True):
 	"""For list of KPI, set of dictionary inputs, calculate and print significances per KPI"""
 	for kpi in kpi_list:
 		#check this KPI will work
@@ -203,13 +230,21 @@ def kpi_ttest(kpi_list, interest_subject, interest_values, comparison_values, ap
 		tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
 		if count == 0:
 			raise Exception("Count of players with comparison values = 0")
-		print "%s... %s's normalized performance:\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
-					\n\t   w/ %s%% statistical sig. \
-					\n\tinterest.. avg value = %s \t game count = %s \
-					\n\tcomparis.. avg value = %s \t game count = %s" \
-					% (kpi, interest_subject, round(tstat,3), count, \
-						appearance_threshold, round((1-signif)*100,1), \
-						interest_summary[0], float(interest_summary[1]), \
+
+		#print either a lot or very little information
+		if long_print:
+			print "%s... %s's normalized performance: \
+						\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
+						\n\t   w/ %s%% statistical sig. \
+						\n\tinterest.. avg value = %s \t game count = %s \
+						\n\tcomparis.. avg value = %s \t game count = %s" \
+						% (kpi, interest_subject, round(tstat,3), count, \
+							appearance_threshold, round((1-signif)*100,1), \
+							interest_summary[0], float(interest_summary[1]), \
+							comp_summary[0], float(comp_summary[1])/count)
+		else:
+			print "%s, %s, %s, %s, %s, %s, %s, %s" % (interest_subject, kpi, round(tstat,5), \
+						round((1-signif)*100,1), interest_summary[0], float(interest_summary[1]), \
 						comp_summary[0], float(comp_summary[1])/count)
 
 def kpi_ttest_group_interest(kpi_list, interest_subject, interest_values, comparison_values, appearance_threshold=True):
@@ -248,7 +283,8 @@ def kpi_ttest_group_interest(kpi_list, interest_subject, interest_values, compar
 		tstat, signif, comp_summary, interest_summary = ustats.welchs_ttest(comparison_data_points, interest_data_points)
 		if c_count == 0:
 			raise Exception("Count of players with comparison values = 0")
-		print "%s... %s's normalized performance:\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
+		if long_print:
+			print "%s... %s's normalized performance:\n\t%s relative to %s player(s) || Appearance Thresh. = %s \
 					\n\t   w/ %s%% statistical sig. \
 					\n\tinterest.. avg value = %s \t game count = %s \
 					\n\tcomparis.. avg value = %s \t game count = %s" \
@@ -256,7 +292,11 @@ def kpi_ttest_group_interest(kpi_list, interest_subject, interest_values, compar
 						appearance_threshold, round((1-signif)*100,1), \
 						interest_summary[0], float(interest_summary[1])/i_count, \
 						comp_summary[0], float(comp_summary[1])/c_count)
-
+		else:
+			print "%s, %s, %s, %s, %s, %s, %s, %s" % (interest_subject, kpi, round(tstat,5), \
+						round((1-signif)*100,1), interest_summary[0], float(interest_summary[1])/i_count, \
+						comp_summary[0], float(comp_summary[1])/c_count)
+			
 def is_valid_kpi(kpi):
 	"""Given a KPI name, is it valid to run analysis5 on?
 		1) does it exist as a statistic type?
@@ -293,6 +333,7 @@ def derived_kpis():
 	d_kpis = [
 	#derived kpi name , math formula, relevant statisitcs to pull
 	["d_kpi__pass_accuracy_%", "a/b", "accurate_pass", "total_pass"]
+	,["d_kpi__open_play_pass_success_%", "a/b", "successful_open_play_pass", "open_play_pass"]
 	,["d_kpi__blocked_pass_%", "a/b", "blocked_pass", "total_pass"]
 	,["d_kpi__forward_pass_%", "a/b", "fwd_pass", "total_pass"]
 	,["d_kpi__backward_pass_%", "a/b", "backward_pass", "total_pass"]
@@ -304,9 +345,18 @@ def derived_kpis():
 	,["d_kpi__aerial_win_%", "a/(a+b)", "aerial_won", "aerial_lost"]
 	,["d_kpi__launch_accuracy_%", "a/b", "accurate_launches", "total_launches"]
 	,["d_kpi__long_balls_accuracy_%", "a/b", "accurate_long_balls", "total_long_pass"]
+	,["d_kpi__layoffs_accuracy_%", "a/b", "accurate_layoffs", "total_layoffs"]
+	,["d_kpi__back_zone_pass_accuracy_%", "a/b", "accurate_back_zone_pass", "total_back_zone_pass"]
+	,["d_kpi__fwd_zone_pass_accuracy_%", "a/b", "accurate_fwd_zone_pass", "total_fwd_zone_pass"]
 	,["d_kpi__touches_per_pass", "a/b", "touches", "total_pass"]
 	,["d_kpi__touches_per_accurate_pass", "a/b", "touches", "accurate_pass"]
 	,["d_kpi__possession_balance", "a/b","ball_recovery","poss_lost_all"]
+	,["d_kpi__attempts_conceded_ibox_%", "a/(a+b)", "attempts_conceded_ibox", "attempts_conceded_obox"]
+	,["d_kpi__final_third_pass_success_%", "a/b", "successful_final_third_passes", "total_final_third_passes"]
+	,["d_kpi__challenge_lost_%", "a/b", "challenge_lost", "total_contest"]
+	,["d_kpi__interceptions_won_%", "a/b", "interception_won", "interception"]
+	,["d_kpi__headers", "a+b", "head_clearance", "head_pass"]
+	,["d_kpi__poss_won_def&mid_3rd", "a+b", "poss_won_def_3rd", "poss_won_mid_3rd"]
 	]
 	return d_kpis
 
